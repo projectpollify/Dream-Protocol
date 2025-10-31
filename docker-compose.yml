@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: dreamprotocol-db
+    environment:
+      POSTGRES_DB: dreamprotocol_dev
+      POSTGRES_USER: dream_admin
+      POSTGRES_PASSWORD: dream_dev_password_change_in_production
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dream_admin -d dreamprotocol_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Identity Module
+  identity:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dreamprotocol-identity
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: dreamprotocol_dev
+      DB_USER: dream_admin
+      DB_PASSWORD: dream_dev_password_change_in_production
+      DB_SSL: false
+
+      # Identity Module
+      MASTER_ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      MASTER_KEY_ID: "mk_v1_dev"
+      IP_HASH_SALT: "dev_salt_change_in_production"
+
+      # Cardano
+      CARDANO_NETWORK: testnet
+
+      # API
+      API_PORT: 3001
+      CORS_ORIGIN: "*"
+      NODE_ENV: development
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./packages/01-identity/src:/app/src
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
