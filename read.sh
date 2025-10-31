@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Script to display project documentation for Claude to review
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "==================================================================="
+echo "DREAM PROTOCOL - Documentation Review"
+echo "==================================================================="
+echo ""
+echo "--- DREAM_PROTOCOL.md ---"
+echo ""
+cat "$SCRIPT_DIR/DREAM_PROTOCOL.md"
+echo ""
+echo ""
+echo "--- PROGRESS.md ---"
+echo ""
+cat "$SCRIPT_DIR/PROGRESS.md"
+echo ""
+echo ""
+echo "==================================================================="
+echo "Claude: Please review the above documentation and wait for further instructions."
+echo "==================================================================="

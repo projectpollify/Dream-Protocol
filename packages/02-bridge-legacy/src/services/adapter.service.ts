@@ -4,7 +4,7 @@
  * Handles API translation and response normalization
  */
 
-import { featureFlagService } from './feature-flag.service';
+import featureFlagService from './feature-flag.service';
 import { AdapterRequest, AdapterResponse } from '../types/bridge.types';
 
 class AdapterService {
@@ -259,4 +259,6 @@ class AdapterService {
   }
 }
 
-export const adapterService = new AdapterService();
+const adapterService = new AdapterService();
+
+export default adapterService;

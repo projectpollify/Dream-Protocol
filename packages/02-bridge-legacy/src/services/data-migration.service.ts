@@ -633,4 +633,6 @@ class DataMigrationService {
   }
 }
 
-export const dataMigrationService = new DataMigrationService();
+const dataMigrationService = new DataMigrationService();
+
+export default dataMigrationService;

@@ -345,4 +345,6 @@ export class IdentityService {
   }
 }
 
-export const identityService = new IdentityService();
+const identityService = new IdentityService();
+
+export default identityService;

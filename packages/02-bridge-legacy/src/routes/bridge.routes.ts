@@ -4,9 +4,9 @@
  */
 
 import express, { Request, Response } from 'express';
-import { featureFlagService } from '../services/feature-flag.service';
-import { dataMigrationService } from '../services/data-migration.service';
-import { adapterService } from '../services/adapter.service';
+import featureFlagService from '../services/feature-flag.service';
+import dataMigrationService from '../services/data-migration.service';
+import adapterService from '../services/adapter.service';
 
 const router = express.Router();
 

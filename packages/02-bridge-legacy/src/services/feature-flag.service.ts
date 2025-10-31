@@ -387,4 +387,6 @@ class FeatureFlagService {
   }
 }
 
-export const featureFlagService = new FeatureFlagService();
+const featureFlagService = new FeatureFlagService();
+
+export default featureFlagService;

@@ -1,7 +1,7 @@
 /**
- * Module 01: Identity - Database Utilities
+ * Module 04: Economy - Database Utilities
  *
- * Standard database connection and query utilities (functional pattern)
+ * Database connection and query utilities for the Economy module
  */
 
 import { Pool, PoolClient, QueryResult } from 'pg';
@@ -16,23 +16,16 @@ dotenv.config();
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'dreamprotocol_dev',
-  user: process.env.DB_USER || 'dream_admin',
-  password: process.env.DB_PASSWORD,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-  min: parseInt(process.env.DB_POOL_MIN || '2'),
-  max: parseInt(process.env.DB_POOL_MAX || '10'),
+  database: process.env.DB_NAME || 'dreamprotocol',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  max: 20, // Maximum pool size
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 });
 
-// Error handling
-pool.on('error', (err) => {
-  console.error('Unexpected database error:', err);
-});
-
 // ============================================================================
-// Core Query Functions
+// Query Functions
 // ============================================================================
 
 /**
@@ -52,7 +45,7 @@ export async function query<T = any>(
     }
 
     return result;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Database query error:', error);
     throw error;
   }
@@ -108,7 +101,7 @@ export async function closePool(): Promise<void> {
 }
 
 // ============================================================================
-// Query Helpers
+// Typed Query Builders
 // ============================================================================
 
 /**

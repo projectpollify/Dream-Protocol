@@ -71,4 +71,6 @@ export class CardanoService {
   }
 }
 
-export const cardanoService = new CardanoService();
+const cardanoService = new CardanoService();
+
+export default cardanoService;
