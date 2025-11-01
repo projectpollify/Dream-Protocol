@@ -1,0 +1,46 @@
+{
+  "name": "@dream/social",
+  "version": "1.0.0",
+  "description": "Module 08: Social engagement system with dual-identity support for Dream Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "db:migrate": "tsx src/database/migrate.ts",
+    "db:seed": "tsx src/database/seed.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed"
+  },
+  "keywords": [
+    "dream-protocol",
+    "social",
+    "reactions",
+    "follows",
+    "notifications",
+    "activity-feed",
+    "dual-identity"
+  ],
+  "author": "Dream Protocol Team",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.11.3",
+    "express": "^4.18.2",
+    "dotenv": "^16.4.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/express": "^4.17.21",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0",
+    "vitest": "^1.2.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4",
+    "@vitest/coverage-v8": "^1.2.0"
+  }
+}

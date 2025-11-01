@@ -1,12 +1,12 @@
 # Dream Protocol - Development Progress
 
-**Last Updated**: November 1, 2025
-**Current Phase**: Core Value (Module 7 - Content) ✅ COMPLETE
+**Last Updated**: October 31, 2025
+**Current Phase**: Core Value (Module 8 - Social) ✅ COMPLETE
 **Timeline**: 30 weeks to Wave 1 launch
 
 ---
 
-## 📊 Overall Progress: 7/22 Modules Complete (32%) + Frontend Dashboard
+## 📊 Overall Progress: 8/22 Modules Complete (36%) + Frontend Dashboard
 
 ### Legend
 - ✅ Complete (Implemented & Tested)
@@ -37,13 +37,13 @@
 
 ---
 
-### **PRIORITY 3: CORE VALUE** ✅ 2/3 Complete (67%)
+### **PRIORITY 3: CORE VALUE** ✅ 3/3 Complete (100%)
 
 | # | Module | Status | Description | Notes |
 |---|--------|--------|-------------|-------|
 | 06 | **Governance** | ✅ | Dual-mode voting, polls, delegation, Shadow Consensus, staking, rollback, parameters, constitution, action execution | **100% complete** - All features implemented including economy integration |
 | 07 | **Content** | ✅ | Posts, discussions, comments with dual-identity support | 7 tables, 4 services, 25+ API endpoints, 27 tests passing |
-| 08 | **Social** | 📋 | Reactions, follows, notifications, activity feeds | Engagement layer |
+| 08 | **Social** | ✅ | Reactions, follows, notifications, activity feeds, blocks with dual-identity support | 7 tables, 5 services, 18+ API endpoints, 7 integration tests passing |
 
 ---
 
@@ -116,7 +116,7 @@
 - [x] Module 05: Token Exchange
 - [x] Module 06: Governance (100% - fully deployed with frontend dashboard)
 - [x] Module 07: Content (100% - posts, discussions, comments, moderation)
-- [ ] Module 08: Social
+- [x] Module 08: Social (100% - reactions, follows, notifications, feeds, blocks)
 - **Target**: Complete token economy + Shadow Consensus voting ✅ ACHIEVED
 
 ### Phase 3: Truth Discovery (Weeks 11-14) - 0% Complete
@@ -155,6 +155,67 @@
 ---
 
 ## 📈 Recent Accomplishments
+
+### October 31, 2025
+- ✅ **Module 08: Social - COMPLETE** 🎉
+  - **Database Migration**: Successfully deployed 7 social tables with partial unique indexes
+    - `reactions` (upvote, downvote, helpful, insightful, inspiring, funny)
+    - `follows` (dual-identity follow relationships)
+    - `notifications` (in_app, email, push delivery channels)
+    - `notification_preferences` (granular user control)
+    - `social_stats` (denormalized follower/following counts)
+    - `activity_feed` (personalized feed for followed users)
+    - `blocks` (user blocking with automatic follow removal)
+  - **Partial Index Fix**: Applied recommended solution for NULL-safe unique constraints
+    - `idx_reactions_unique_post` WHERE post_id IS NOT NULL
+    - `idx_reactions_unique_comment` WHERE comment_id IS NOT NULL
+    - Prevents duplicate reactions while handling optional foreign keys correctly
+  - **Service Implementation**: 5 comprehensive services with business logic
+    - **Reaction Service**: Add/remove reactions, get counts, check user reactions
+    - **Follow Service**: Follow/unfollow, get followers/following, check relationships, update stats
+    - **Notification Service**: Create notifications, mark read, manage preferences, get unread count
+    - **Feed Service**: Personalized feed from follows, trending content, user activities, log events
+    - **Block Service**: Block/unblock users, check status, auto-remove follows bidirectionally
+  - **API Routes**: 18+ RESTful endpoints for complete social functionality
+    - Reactions: POST, DELETE, GET (by post/comment/user)
+    - Follows: POST, DELETE, GET (followers/following/counts/check)
+    - Notifications: POST, GET, PATCH (read/read-all/preferences)
+    - Feeds: GET (personalized/trending/user-activities), POST (log activity)
+    - Blocks: POST, DELETE, GET (blocked-users/check)
+  - **Integration Tests**: 7 end-to-end workflow tests - ALL PASSING ✅
+    - Follow → See feed workflow
+    - React to post → Notification sent
+    - Block user → Remove follows
+    - Dual-identity social graphs (separate True Self/Shadow follows)
+    - Notification system (create/read/manage)
+    - Trending content retrieval
+    - Notification preferences (update/retrieve)
+  - **Dual-Identity Support**: All social features respect identity mode
+    - True Self and Shadow maintain separate social graphs
+    - Follows are identity-specific (can follow same user in both modes)
+    - Blocks are per-identity (blocking as Shadow doesn't affect True Self)
+    - Activity feeds show only same-identity content
+  - **Key Features**:
+    - ✅ 6 reaction types with soft-delete (reactivatable)
+    - ✅ Follow system with denormalized stats for performance
+    - ✅ Multi-channel notifications (in_app/email/push)
+    - ✅ Granular notification preferences per user
+    - ✅ Personalized activity feeds based on follows
+    - ✅ Trending algorithm (last 24 hours by default)
+    - ✅ Block system with bidirectional follow removal
+    - ✅ Content ownership verification
+    - ✅ Soft deletes throughout (is_active flags)
+  - **Technology Stack**: TypeScript, PostgreSQL, Express.js, Vitest
+  - **Testing Infrastructure**: Created vitest.config.ts for test discovery
+  - **What's Ready**: Production-ready social engagement layer
+    - Ready to integrate with Module 07 (Content) for reactions on posts/comments
+    - Ready to integrate with Module 04 (Economy) for Gratium tipping
+    - Ready to integrate with Module 09 (Verification) for PoH-gated features
+  - **Infrastructure Deferred**: Following user feedback and strategic decision
+    - Redis caching (for feed/stats performance)
+    - Bull/BullMQ queues (for async notification delivery)
+    - Socket.io WebSockets (for real-time updates)
+    - Will be added post-Module 15 when platform has real load
 
 ### November 1, 2025
 - ✅ **Module 06: Governance - FULL DEPLOYMENT COMPLETE** 🎉
@@ -355,27 +416,14 @@
 ## 🚀 Next Up
 
 ### Immediate (This Week)
-1. **Module 07: Content** - Social Foundation
-   - Posts, discussions, comments
-   - Dual-identity content creation (True Self + Shadow)
-   - Basic moderation system
-   - Content voting and engagement
-   - Integration with Module 06 (governance polls as content)
-
-2. **Module 08: Social** - Engagement Layer
-   - Reactions and tipping with Gratium
-   - Follow system with dual-identity support
-   - Notifications and activity feeds
-   - User discovery and recommendations
-
-### Short Term (Next 2 Weeks)
-3. **Module 09: Verification** - Truth Discovery
+1. **Module 09: Verification** - Truth Discovery
    - Proof of Humanity implementation
    - Veracity Bonds system
    - Prediction Markets (building on Module 06 staking)
    - Epistemic Funnel for content quality
 
-4. **Module 10: Analytics** - Insights Engine
+### Short Term (Next 2 Weeks)
+2. **Module 10: Analytics** - Insights Engine
    - Shadow Consensus visualization
    - Trend analysis and tracking
    - Platform health metrics
@@ -431,8 +479,8 @@ docker-compose up
 ---
 
 **Total Timeline**: 30 weeks to Wave 1 launch, +4 months for Creative Module
-**Current Week**: Week 8 (Core Value Phase - Governance Complete ✅)
-**Modules Complete**: 6/22 (27%) with Frontend Dashboard
+**Current Week**: Week 8 (Core Value Phase - Social Complete ✅)
+**Modules Complete**: 8/22 (36%) with Frontend Dashboard
 **Estimated Completion**: ~10 months total
 
 ---
