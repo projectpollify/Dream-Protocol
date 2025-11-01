@@ -340,6 +340,49 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.24)(@vitest/ui@1.6.1)(lightningcss@1.30.2)
 
+  packages/07-content:
+    dependencies:
+      dotenv:
+        specifier: ^16.4.1
+        version: 16.6.1
+      express:
+        specifier: ^4.18.2
+        version: 4.21.2
+      pg:
+        specifier: ^8.11.3
+        version: 8.16.3
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.25
+      '@types/node':
+        specifier: ^20.11.5
+        version: 20.19.24
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.15.6
+      '@vitest/coverage-v8':
+        specifier: ^1.2.0
+        version: 1.6.1(vitest@1.6.1)
+      eslint:
+        specifier: ^8.56.0
+        version: 8.57.1
+      prettier:
+        specifier: ^3.2.4
+        version: 3.6.2
+      tsx:
+        specifier: ^4.7.0
+        version: 4.20.6
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.24)(@vitest/ui@1.6.1)(lightningcss@1.30.2)
+
 packages:
 
   '@alloc/quick-lru@5.2.0':
