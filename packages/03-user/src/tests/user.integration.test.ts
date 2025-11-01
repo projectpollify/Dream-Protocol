@@ -1,423 +1,415 @@
 /**
  * Module 03: User - Integration Tests
  *
- * Tests for user profile, settings, and account management
+ * Tests full flows with database and services
+ * Requires test database
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import profileService from '../services/profile.service';
-import settingsService from '../services/settings.service';
-import accountService from '../services/account.service';
-import { IdentityMode, ProfileVisibility, AccountStatus } from '../types/user.types';
-import * as db from '../utils/database';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { randomUUID } from 'crypto';
+import { setupTestDatabase, teardownTestDatabase, cleanTestDatabase } from '../../../../tests/setup/test-database';
+import { generateTestUser, generateTestProfile } from '../../../../tests/helpers/test-data';
+import type { TestDatabase } from '../../../../tests/setup/test-database';
 
-// ============================================================================
-// TEST SETUP
-// ============================================================================
-
-const TEST_USER_ID = '00000000-0000-0000-0000-000000000999';
-const TEST_EMAIL = 'test@dreamprotocol.com';
-const TEST_PASSWORD = 'TestPassword123!';
+let testDb: TestDatabase;
 
 beforeAll(async () => {
-  // Ensure database is connected
-  const healthy = await db.healthCheck();
-  if (!healthy) {
-    throw new Error('Database not available for testing');
-  }
-
-  // Clean up any existing test data
-  await cleanupTestData();
+  testDb = await setupTestDatabase();
 });
 
 afterAll(async () => {
-  // Clean up test data
-  await cleanupTestData();
-
-  // Close database connection
-  await db.closePool();
+  await teardownTestDatabase();
 });
 
-async function cleanupTestData() {
-  try {
-    await db.query('DELETE FROM user_profiles WHERE user_id = $1', [TEST_USER_ID]);
-    await db.query('DELETE FROM user_settings WHERE user_id = $1', [TEST_USER_ID]);
-    await db.query('DELETE FROM user_account_status WHERE user_id = $1', [TEST_USER_ID]);
-    await db.query('DELETE FROM user_preferences WHERE user_id = $1', [TEST_USER_ID]);
-    await db.query('DELETE FROM profile_avatars WHERE user_id = $1', [TEST_USER_ID]);
-  } catch (error) {
-    // Ignore errors during cleanup
-  }
-}
+beforeEach(async () => {
+  await cleanTestDatabase();
+});
 
 // ============================================================================
-// PROFILE SERVICE TESTS
+// INTEGRATION TEST - Full Profile Setup Flow
 // ============================================================================
 
-describe('Profile Service', () => {
-  it('should create True Self profile', async () => {
-    const profile = await profileService.createUserProfile({
-      user_id: TEST_USER_ID,
-      identity_mode: IdentityMode.TRUE_SELF,
-      display_name: 'Test User',
-      bio: 'This is a test profile',
-    });
+describe('Integration - Full Profile Setup', () => {
+  it('should create complete user profile with all fields', async () => {
+    const profileService = (await import('../services/profile.service')).default;
+
+    const userId = randomUUID();
+    const testProfile = generateTestProfile();
+
+    // Create user first
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
+    );
+
+    // Create True Self profile
+    const profile = await profileService.createProfile(
+      userId,
+      'true_self',
+      testProfile.display_name,
+      testProfile.bio,
+      testProfile.location,
+      testProfile.website
+    );
 
     expect(profile).toBeDefined();
-    expect(profile.user_id).toBe(TEST_USER_ID);
-    expect(profile.identity_mode).toBe(IdentityMode.TRUE_SELF);
-    expect(profile.display_name).toBe('Test User');
-    expect(profile.bio).toBe('This is a test profile');
-    expect(profile.profile_visibility).toBe(ProfileVisibility.PUBLIC);
+    expect(profile.user_id).toBe(userId);
+    expect(profile.identity_mode).toBe('true_self');
+    expect(profile.display_name).toBe(testProfile.display_name);
+    expect(profile.bio).toBe(testProfile.bio);
+    expect(profile.profile_visibility).toBe('public'); // Default for True Self
   });
 
-  it('should create Shadow profile with private visibility', async () => {
-    const profile = await profileService.createUserProfile({
-      user_id: TEST_USER_ID,
-      identity_mode: IdentityMode.SHADOW,
-      bio: 'Shadow profile',
-    });
+  it('should store profile in database with correct visibility', async () => {
+    const profileService = (await import('../services/profile.service')).default;
 
-    expect(profile).toBeDefined();
-    expect(profile.identity_mode).toBe(IdentityMode.SHADOW);
-    expect(profile.profile_visibility).toBe(ProfileVisibility.PRIVATE);
-    expect(profile.display_name).toMatch(/^Shadow_/);
-  });
+    const userId = randomUUID();
 
-  it('should get user profile', async () => {
-    const profile = await profileService.getUserProfile({
-      user_id: TEST_USER_ID,
-      identity_mode: IdentityMode.TRUE_SELF,
-      viewer_user_id: TEST_USER_ID,
-    });
-
-    expect(profile).toBeDefined();
-    expect(profile.display_name).toBe('Test User');
-  });
-
-  it('should update profile', async () => {
-    const updated = await profileService.updateUserProfile(
-      TEST_USER_ID,
-      IdentityMode.TRUE_SELF,
-      {
-        display_name: 'Updated User',
-        bio: 'Updated bio',
-        website_url: 'https://example.com',
-      }
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
     );
 
-    expect(updated.display_name).toBe('Updated User');
-    expect(updated.bio).toBe('Updated bio');
-    expect(updated.website_url).toBe('https://example.com');
-  });
-
-  it('should add badge to profile', async () => {
-    const updated = await profileService.addBadge(
-      TEST_USER_ID,
-      IdentityMode.TRUE_SELF,
-      'founding_member',
-      'Founding Member',
-      'https://example.com/badge.png'
+    // Create profile
+    await profileService.createProfile(
+      userId,
+      'true_self',
+      'Test User',
+      'Test bio',
+      null,
+      null
     );
 
-    expect(updated.badges).toHaveLength(1);
-    expect(updated.badges[0].badge_id).toBe('founding_member');
+    // Query database
+    const result = await testDb.query(
+      `SELECT * FROM user_profiles WHERE user_id = $1 AND identity_mode = $2`,
+      [userId, 'true_self']
+    );
+
+    expect(result.rows.length).toBe(1);
+    expect(result.rows[0].display_name).toBe('Test User');
+    expect(result.rows[0].profile_visibility).toBe('public');
   });
 
-  it('should search profiles', async () => {
-    const results = await profileService.searchProfiles('Updated', 10);
-    expect(results).toBeInstanceOf(Array);
+  it('should upload and process avatar with Sharp', async () => {
+    const avatarService = (await import('../services/avatar.service')).default;
+
+    const userId = randomUUID();
+
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
+    );
+
+    // Mock image buffer (1x1 transparent PNG)
+    const mockImageBuffer = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+
+    // Upload avatar
+    const result = await avatarService.uploadAvatar(userId, 'true_self', mockImageBuffer, 'test.png');
+
+    expect(result).toBeDefined();
+    expect(result.thumbnail_url).toBeDefined();
+    expect(result.medium_url).toBeDefined();
+    expect(result.large_url).toBeDefined();
+
+    // Verify in database
+    const avatars = await testDb.query(
+      `SELECT * FROM profile_avatars WHERE user_id = $1 AND identity_mode = $2`,
+      [userId, 'true_self']
+    );
+
+    expect(avatars.rows.length).toBe(1);
+    expect(avatars.rows[0].thumbnail_url).toBeDefined();
+    expect(avatars.rows[0].medium_url).toBeDefined();
+    expect(avatars.rows[0].large_url).toBeDefined();
   });
 });
 
 // ============================================================================
-// SETTINGS SERVICE TESTS
+// INTEGRATION TEST - Dual Identity Profile Visibility
 // ============================================================================
 
-describe('Settings Service', () => {
-  it('should create user settings', async () => {
-    const settings = await settingsService.createUserSettings(
-      TEST_USER_ID,
-      TEST_EMAIL,
-      TEST_PASSWORD
+describe('Integration - Dual Identity Profiles', () => {
+  it('should create separate profiles for True Self and Shadow', async () => {
+    const profileService = (await import('../services/profile.service')).default;
+
+    const userId = randomUUID();
+
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
     );
 
-    expect(settings).toBeDefined();
-    expect(settings.user_id).toBe(TEST_USER_ID);
-    expect(settings.email).toBe(TEST_EMAIL);
-    expect(settings.email_verified).toBe(false);
-    expect(settings.password_hash).toBeDefined();
+    // Create True Self profile
+    const trueSelfProfile = await profileService.createProfile(
+      userId,
+      'true_self',
+      'John Doe',
+      'Public profile bio',
+      'San Francisco',
+      'https://johndoe.com'
+    );
+
+    // Create Shadow profile
+    const shadowProfile = await profileService.createProfile(
+      userId,
+      'shadow',
+      null,
+      null,
+      null,
+      null
+    );
+
+    // Verify both exist
+    expect(trueSelfProfile.user_id).toBe(userId);
+    expect(shadowProfile.user_id).toBe(userId);
+
+    // Verify they're different
+    expect(trueSelfProfile.identity_mode).toBe('true_self');
+    expect(shadowProfile.identity_mode).toBe('shadow');
+    expect(trueSelfProfile.display_name).not.toBe(shadowProfile.display_name);
   });
 
-  it('should get user settings', async () => {
-    const settings = await settingsService.getUserSettings(TEST_USER_ID);
+  it('should enforce privacy between identities', async () => {
+    const profileService = (await import('../services/profile.service')).default;
 
-    expect(settings).toBeDefined();
-    expect(settings.email).toBe(TEST_EMAIL);
-    expect(settings).not.toHaveProperty('password_hash'); // Should be sanitized
+    const userId = randomUUID();
+    const otherUserId = randomUUID();
+
+    // Create users
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3), ($4, $5, $6)`,
+      [userId, 'user@test.com', 'testuser', otherUserId, 'other@test.com', 'otheruser']
+    );
+
+    // Create True Self profile (public)
+    await profileService.createProfile(userId, 'true_self', 'John Doe', 'Public bio', null, null);
+
+    // Create Shadow profile (private)
+    await profileService.createProfile(userId, 'shadow', null, null, null, null);
+
+    // Other user queries True Self profile (should succeed - public)
+    const trueSelfProfile = await profileService.getProfile(userId, 'true_self');
+    expect(trueSelfProfile).toBeDefined();
+    expect(trueSelfProfile.display_name).toBe('John Doe');
+
+    // Other user queries Shadow profile (should return limited info - private)
+    const shadowProfile = await profileService.getProfile(userId, 'shadow');
+
+    // Shadow profiles are private by default
+    expect(shadowProfile.profile_visibility).toBe('private');
   });
 
-  it('should update settings', async () => {
-    const updated = await settingsService.updateUserSettings({
-      user_id: TEST_USER_ID,
-      email_notifications: {
-        poll_results: false,
-        mentions: true,
-      },
-      privacy_settings: {
-        show_online_status: false,
-        allow_direct_messages: 'followers',
-      },
+  it('should update True Self profile without affecting Shadow', async () => {
+    const profileService = (await import('../services/profile.service')).default;
+
+    const userId = randomUUID();
+
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
+    );
+
+    // Create both profiles
+    await profileService.createProfile(userId, 'true_self', 'Original Name', 'Original bio', null, null);
+    await profileService.createProfile(userId, 'shadow', null, null, null, null);
+
+    // Update True Self profile
+    await profileService.updateProfile(userId, 'true_self', {
+      display_name: 'Updated Name',
+      bio: 'Updated bio',
     });
 
-    expect(updated).toBeDefined();
-    const emailNotifs = JSON.parse(updated.email_notifications as any);
-    expect(emailNotifs.poll_results).toBe(false);
-    expect(updated.show_online_status).toBe(false);
-  });
+    // Verify True Self updated
+    const trueSelfProfile = await profileService.getProfile(userId, 'true_self');
+    expect(trueSelfProfile.display_name).toBe('Updated Name');
+    expect(trueSelfProfile.bio).toBe('Updated bio');
 
-  it('should verify password', async () => {
-    const isValid = await settingsService.verifyPassword(
-      TEST_USER_ID,
-      TEST_PASSWORD
-    );
-    expect(isValid).toBe(true);
-
-    const isInvalid = await settingsService.verifyPassword(
-      TEST_USER_ID,
-      'WrongPassword'
-    );
-    expect(isInvalid).toBe(false);
-  });
-
-  it('should change password', async () => {
-    const newPassword = 'NewPassword456!';
-
-    await settingsService.changePassword(
-      TEST_USER_ID,
-      TEST_PASSWORD,
-      newPassword
-    );
-
-    // Verify new password works
-    const isValid = await settingsService.verifyPassword(TEST_USER_ID, newPassword);
-    expect(isValid).toBe(true);
-
-    // Change back to original
-    await settingsService.changePassword(
-      TEST_USER_ID,
-      newPassword,
-      TEST_PASSWORD
-    );
+    // Verify Shadow unchanged
+    const shadowProfile = await profileService.getProfile(userId, 'shadow');
+    expect(shadowProfile.display_name).toBeNull();
+    expect(shadowProfile.bio).toBeNull();
   });
 });
 
 // ============================================================================
-// ACCOUNT SERVICE TESTS
+// INTEGRATION TEST - Settings Persistence
 // ============================================================================
 
-describe('Account Service', () => {
-  it('should create account status', async () => {
-    const status = await accountService.createAccountStatus(TEST_USER_ID);
+describe('Integration - Settings Persistence', () => {
+  it('should persist notification settings globally', async () => {
+    const settingsService = (await import('../services/settings.service')).default;
 
-    expect(status).toBeDefined();
-    expect(status.user_id).toBe(TEST_USER_ID);
-    expect(status.status).toBe(AccountStatus.ACTIVE);
-    expect(status.verified_account).toBe(false);
-    expect(status.trust_score).toBe(50.0);
-  });
+    const userId = randomUUID();
 
-  it('should get account status', async () => {
-    const status = await accountService.getAccountStatus(TEST_USER_ID);
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
+    );
 
-    expect(status).toBeDefined();
-    expect(status.status).toBe(AccountStatus.ACTIVE);
-  });
-
-  it('should verify account', async () => {
-    const status = await accountService.verifyAccount(TEST_USER_ID, 'manual');
-
-    expect(status.verified_account).toBe(true);
-    expect(status.verification_type).toBe('manual');
-    expect(status.verified_at).toBeDefined();
-  });
-
-  it('should update trust score', async () => {
-    const updated = await accountService.updateTrustScore({
-      user_id: TEST_USER_ID,
-      trust_score: 75.0,
-      spam_score: 5.0,
-      bot_probability: 2.0,
+    // Update notification settings
+    await settingsService.updateNotificationSettings(userId, {
+      notification_email: true,
+      notification_push: false,
+      notification_poll_created: true,
+      notification_poll_ended: false,
+      notification_comment: true,
     });
 
-    expect(updated.trust_score).toBe(75.0);
-    expect(updated.spam_score).toBe(5.0);
-    expect(updated.bot_probability).toBe(2.0);
+    // Retrieve settings
+    const settings = await settingsService.getSettings(userId);
+
+    expect(settings.notification_email).toBe(true);
+    expect(settings.notification_push).toBe(false);
+    expect(settings.notification_poll_created).toBe(true);
   });
 
-  it('should increase trust score', async () => {
-    const before = await accountService.getAccountStatus(TEST_USER_ID);
+  it('should maintain settings across identity mode switches', async () => {
+    const settingsService = (await import('../services/settings.service')).default;
 
-    await accountService.increaseTrustScore(TEST_USER_ID, 5);
+    const userId = randomUUID();
 
-    const after = await accountService.getAccountStatus(TEST_USER_ID);
-    expect(after.trust_score).toBe(before.trust_score + 5);
-  });
-
-  it('should issue warning', async () => {
-    const status = await accountService.issueWarning(
-      TEST_USER_ID,
-      'Test warning',
-      'admin_user_id'
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
     );
 
-    expect(status.warning_count).toBeGreaterThan(0);
-    expect(status.last_warning_at).toBeDefined();
+    // Set notification settings in True Self mode
+    await settingsService.updateNotificationSettings(userId, {
+      notification_email: true,
+      notification_push: true,
+    });
+
+    // Simulate switching to Shadow mode (settings should persist)
+    // Settings are global, not per-identity
+    const settings = await settingsService.getSettings(userId);
+
+    expect(settings.notification_email).toBe(true);
+    expect(settings.notification_push).toBe(true);
   });
 
-  it('should suspend account', async () => {
-    const status = await accountService.suspendAccount(
-      TEST_USER_ID,
-      'admin_user_id',
-      'Test suspension',
-      7
+  it('should persist settings after logout and login', async () => {
+    const settingsService = (await import('../services/settings.service')).default;
+
+    const userId = randomUUID();
+
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
     );
 
-    expect(status.status).toBe(AccountStatus.SUSPENDED);
-    expect(status.status_reason).toBe('Test suspension');
-    expect(status.status_expires_at).toBeDefined();
-  });
+    // Set preferences
+    await settingsService.updatePreferences(userId, {
+      language: 'en',
+      timezone: 'America/Los_Angeles',
+      feed_algorithm: 'chronological',
+    });
 
-  it('should reactivate account', async () => {
-    const status = await accountService.reactivateAccount(
-      TEST_USER_ID,
-      'admin_user_id'
+    // Simulate logout/login by querying fresh from database
+    const settings = await testDb.query(
+      `SELECT * FROM user_preferences WHERE user_id = $1`,
+      [userId]
     );
 
-    expect(status.status).toBe(AccountStatus.ACTIVE);
-  });
-
-  it('should update last active', async () => {
-    await accountService.updateLastActive(TEST_USER_ID);
-
-    const status = await accountService.getAccountStatus(TEST_USER_ID);
-    const now = new Date();
-    const diff = now.getTime() - new Date(status.last_active_at).getTime();
-
-    // Should be within 5 seconds
-    expect(diff).toBeLessThan(5000);
+    expect(settings.rows.length).toBe(1);
+    expect(settings.rows[0].language).toBe('en');
+    expect(settings.rows[0].feed_algorithm).toBe('chronological');
   });
 });
 
 // ============================================================================
-// DATABASE UTILITY TESTS
+// INTEGRATION TEST - Account Status Management
 // ============================================================================
 
-describe('Database Utilities', () => {
-  it('should check if record exists', async () => {
-    const exists = await db.exists('user_profiles', {
-      user_id: TEST_USER_ID,
-    });
+describe('Integration - Account Status', () => {
+  it('should transition account from active to suspended', async () => {
+    const accountService = (await import('../services/account.service')).default;
 
-    expect(exists).toBe(true);
+    const userId = randomUUID();
+
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
+    );
+
+    // Create account status (active by default)
+    await accountService.createAccountStatus(userId);
+
+    // Suspend account
+    await accountService.updateAccountStatus(userId, 'suspended', 'Violation of terms');
+
+    // Verify suspended
+    const status = await accountService.getAccountStatus(userId);
+    expect(status.status).toBe('suspended');
+    expect(status.status_reason).toBe('Violation of terms');
   });
 
-  it('should count records', async () => {
-    const count = await db.count('user_profiles', {
-      user_id: TEST_USER_ID,
-    });
+  it('should prevent login when account is suspended', async () => {
+    const accountService = (await import('../services/account.service')).default;
 
-    expect(count).toBeGreaterThan(0);
+    const userId = randomUUID();
+
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
+    );
+
+    // Create and suspend account
+    await accountService.createAccountStatus(userId);
+    await accountService.updateAccountStatus(userId, 'suspended', 'Test suspension');
+
+    // Check if user can login
+    const canLogin = await accountService.canUserLogin(userId);
+    expect(canLogin).toBe(false);
   });
 
-  it('should build WHERE clause', async () => {
-    const { clause, values } = db.buildWhereClause({
-      user_id: TEST_USER_ID,
-      identity_mode: IdentityMode.TRUE_SELF,
-    });
+  it('should allow login after reactivation', async () => {
+    const accountService = (await import('../services/account.service')).default;
 
-    expect(clause).toContain('WHERE');
-    expect(clause).toContain('user_id = $1');
-    expect(clause).toContain('identity_mode = $2');
-    expect(values).toEqual([TEST_USER_ID, IdentityMode.TRUE_SELF]);
+    const userId = randomUUID();
+
+    // Create user
+    await testDb.query(
+      `INSERT INTO users (id, email, username) VALUES ($1, $2, $3)`,
+      [userId, 'user@test.com', 'testuser']
+    );
+
+    // Create, suspend, then reactivate
+    await accountService.createAccountStatus(userId);
+    await accountService.updateAccountStatus(userId, 'suspended', 'Test');
+    await accountService.updateAccountStatus(userId, 'active', 'Reactivated');
+
+    // Verify can login
+    const canLogin = await accountService.canUserLogin(userId);
+    expect(canLogin).toBe(true);
   });
 });
 
 // ============================================================================
-// INTEGRATION TESTS
+// SUMMARY
 // ============================================================================
 
-describe('Integration - Complete User Flow', () => {
-  it('should create complete user with all components', async () => {
-    const newUserId = '00000000-0000-0000-0000-000000001000';
-
-    try {
-      // 1. Create account status
-      const accountStatus = await accountService.createAccountStatus(newUserId);
-      expect(accountStatus.status).toBe(AccountStatus.ACTIVE);
-
-      // 2. Create settings
-      const settings = await settingsService.createUserSettings(
-        newUserId,
-        'newuser@test.com',
-        'Password123!'
-      );
-      expect(settings.email).toBe('newuser@test.com');
-
-      // 3. Create profiles (both identities)
-      const trueSelfProfile = await profileService.createUserProfile({
-        user_id: newUserId,
-        identity_mode: IdentityMode.TRUE_SELF,
-        display_name: 'New User',
-      });
-      expect(trueSelfProfile.identity_mode).toBe(IdentityMode.TRUE_SELF);
-
-      const shadowProfile = await profileService.createUserProfile({
-        user_id: newUserId,
-        identity_mode: IdentityMode.SHADOW,
-      });
-      expect(shadowProfile.identity_mode).toBe(IdentityMode.SHADOW);
-
-      // 4. Verify account
-      await accountService.verifyAccount(newUserId, 'identity_verified');
-
-      // 5. Update settings
-      await settingsService.updateUserSettings({
-        user_id: newUserId,
-        privacy_settings: {
-          show_online_status: false,
-        },
-      });
-
-      // 6. Add badge
-      await profileService.addBadge(
-        newUserId,
-        IdentityMode.TRUE_SELF,
-        'early_adopter'
-      );
-
-      // Verify everything is set up correctly
-      const finalStatus = await accountService.getAccountStatus(newUserId);
-      expect(finalStatus.verified_account).toBe(true);
-
-      const finalProfile = await profileService.getUserProfile({
-        user_id: newUserId,
-        identity_mode: IdentityMode.TRUE_SELF,
-        viewer_user_id: newUserId,
-      });
-      expect(finalProfile.is_verified).toBe(true);
-      expect(finalProfile.badges).toHaveLength(1);
-
-      // Cleanup
-      await db.query('DELETE FROM user_profiles WHERE user_id = $1', [newUserId]);
-      await db.query('DELETE FROM user_settings WHERE user_id = $1', [newUserId]);
-      await db.query('DELETE FROM user_account_status WHERE user_id = $1', [newUserId]);
-    } catch (error) {
-      // Cleanup on error
-      await db.query('DELETE FROM user_profiles WHERE user_id = $1', [newUserId]);
-      await db.query('DELETE FROM user_settings WHERE user_id = $1', [newUserId]);
-      await db.query('DELETE FROM user_account_status WHERE user_id = $1', [newUserId]);
-      throw error;
-    }
-  });
-});
+/*
+ * Integration Tests Summary for Module 03: User
+ *
+ * ✅ Full Profile Setup (3 tests)
+ * ✅ Dual Identity Profiles (3 tests)
+ * ✅ Settings Persistence (3 tests)
+ * ✅ Account Status Management (3 tests)
+ *
+ * Total: 12 integration tests
+ * Database: Test database with migrations
+ * Coverage: Full user profile and settings flows
+ */

@@ -5,6 +5,7 @@
  */
 
 import { Router, Request, Response } from 'express';
+import type { Router as RouterType } from 'express';
 import { z } from 'zod';
 import purchaseService from '../services/purchase.service';
 import pricingService from '../services/pricing.service';
@@ -12,7 +13,7 @@ import dexService from '../services/dex.service';
 import complianceService from '../services/compliance.service';
 import limitsService from '../services/limits.service';
 
-const router = Router();
+const router: RouterType = Router();
 
 // ============================================================================
 // Validation Schemas
@@ -107,8 +108,9 @@ declare global {
 router.get('/prices', async (req: Request, res: Response) => {
   try {
     const tokens = req.query.tokens
-      ? (req.query.tokens as string).split(',')
-      : ['pollcoin', 'gratium'];
+      ? (req.query.tokens as string).split(',').filter((t): t is 'pollcoin' | 'gratium' =>
+          t === 'pollcoin' || t === 'gratium')
+      : ['pollcoin' as const, 'gratium' as const];
     const sources = req.query.sources
       ? (req.query.sources as string).split(',')
       : ['on_platform', 'market'];

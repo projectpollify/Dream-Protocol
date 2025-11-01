@@ -4,7 +4,7 @@
  * Database connection and query utilities for the Token Exchange module
  */
 
-import { Pool, PoolClient, QueryResult } from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -31,7 +31,7 @@ const pool = new Pool({
 /**
  * Execute a single query
  */
-export async function query<T = any>(
+export async function query<T extends QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {
@@ -107,7 +107,7 @@ export async function closePool(): Promise<void> {
 /**
  * Find one record
  */
-export async function findOne<T>(
+export async function findOne<T extends QueryResultRow>(
   table: string,
   conditions: Record<string, any>
 ): Promise<T | null> {
@@ -126,7 +126,7 @@ export async function findOne<T>(
 /**
  * Find many records
  */
-export async function findMany<T>(
+export async function findMany<T extends QueryResultRow>(
   table: string,
   conditions?: Record<string, any>,
   options?: {
@@ -165,7 +165,7 @@ export async function findMany<T>(
 /**
  * Insert a record
  */
-export async function insert<T>(
+export async function insert<T extends QueryResultRow>(
   table: string,
   data: Record<string, any>
 ): Promise<T> {
@@ -184,7 +184,7 @@ export async function insert<T>(
 /**
  * Update a record
  */
-export async function update<T>(
+export async function update<T extends QueryResultRow>(
   table: string,
   conditions: Record<string, any>,
   data: Record<string, any>

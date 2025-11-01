@@ -1,0 +1,628 @@
+{
+  "info": {
+    "name": "Module 06: Governance API",
+    "description": "Complete API collection for Dream Protocol Governance Module",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3005",
+      "type": "string"
+    },
+    {
+      "key": "apiPath",
+      "value": "/api/v1/governance",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Polls",
+      "item": [
+        {
+          "name": "Create Poll",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"title\": \"Should we increase poll creation cost?\",\n  \"description\": \"Proposal to increase general poll creation cost from 500 to 750 PollCoin\",\n  \"pollType\": \"parameter_vote\",\n  \"parameterName\": \"poll_creation_cost_general\",\n  \"proposedValue\": \"750\",\n  \"durationDays\": 7\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/create-poll",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["create-poll"]
+            }
+          }
+        },
+        {
+          "name": "Get All Polls",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/polls?status=active&limit=20&offset=0",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["polls"],
+              "query": [
+                {"key": "status", "value": "active"},
+                {"key": "limit", "value": "20"},
+                {"key": "offset", "value": "0"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Poll by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/polls/:pollId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["polls", ":pollId"],
+              "variable": [{"key": "pollId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Get Governance Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stats",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Voting",
+      "item": [
+        {
+          "name": "Cast Vote",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"identityMode\": \"true_self\",\n  \"voteChoice\": \"yes\",\n  \"lightScore\": 25.5,\n  \"pohScore\": 85.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/vote",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["vote"]
+            }
+          }
+        },
+        {
+          "name": "Change Vote",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"identityMode\": \"true_self\",\n  \"newVoteChoice\": \"no\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/vote/change",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["vote", "change"]
+            }
+          }
+        },
+        {
+          "name": "Query Vote",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/vote/query?pollId=&userId=&identityMode=true_self",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["vote", "query"],
+              "query": [
+                {"key": "pollId", "value": ""},
+                {"key": "userId", "value": ""},
+                {"key": "identityMode", "value": "true_self"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Revoke Vote",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"identityMode\": \"true_self\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/vote/revoke",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["vote", "revoke"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delegation",
+      "item": [
+        {
+          "name": "Delegate Vote",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"delegatorUserId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"delegatorIdentityMode\": \"true_self\",\n  \"delegateToUserId\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"delegateToIdentityMode\": \"true_self\",\n  \"scope\": \"specific_poll\",\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/delegate",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["delegate"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Delegation",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"delegatorUserId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"delegatorIdentityMode\": \"true_self\",\n  \"delegationId\": \"550e8400-e29b-41d4-a716-446655440010\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/delegate/revoke",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["delegate", "revoke"]
+            }
+          }
+        },
+        {
+          "name": "Get Delegations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/delegations?userId=&identityMode=true_self",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["delegations"],
+              "query": [
+                {"key": "userId", "value": ""},
+                {"key": "identityMode", "value": "true_self"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shadow Consensus",
+      "item": [
+        {
+          "name": "Get Shadow Consensus",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/shadow-consensus/:pollId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["shadow-consensus", ":pollId"],
+              "variable": [{"key": "pollId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Analyze Shadow Consensus",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/shadow-consensus/analyze",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["shadow-consensus", "analyze"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staking",
+      "item": [
+        {
+          "name": "Create Stake",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"identityMode\": \"true_self\",\n  \"gratiumAmount\": 100,\n  \"stakePosition\": \"yes\",\n  \"confidenceLevel\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stake",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["stake"]
+            }
+          }
+        },
+        {
+          "name": "Get Stake Pool",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stake/pool/:pollId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["stake", "pool", ":pollId"],
+              "variable": [{"key": "pollId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Get Stake History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stake/history?userId=&identityMode=true_self",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["stake", "history"],
+              "query": [
+                {"key": "userId", "value": ""},
+                {"key": "identityMode", "value": "true_self"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Calculate Potential Reward",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stake/potential-reward?pollId=&stakePosition=yes&gratiumAmount=100",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["stake", "potential-reward"],
+              "query": [
+                {"key": "pollId", "value": ""},
+                {"key": "stakePosition", "value": "yes"},
+                {"key": "gratiumAmount", "value": "100"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Distribute Stake Rewards",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stake/distribute/:pollId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["stake", "distribute", ":pollId"],
+              "variable": [{"key": "pollId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Refund Stakes",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stake/refund/:pollId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["stake", "refund", ":pollId"],
+              "variable": [{"key": "pollId", "value": ""}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rollback",
+      "item": [
+        {
+          "name": "Founder Rollback",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"founderUserId\": \"550e8400-e29b-41d4-a716-446655440099\",\n  \"actionId\": \"550e8400-e29b-41d4-a716-446655440010\",\n  \"reason\": \"Critical security vulnerability detected in parameter change\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/rollback/founder",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["rollback", "founder"]
+            }
+          }
+        },
+        {
+          "name": "Community Rollback Petition",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actionId\": \"550e8400-e29b-41d4-a716-446655440010\",\n  \"reason\": \"This parameter change was not properly communicated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/rollback/petition",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["rollback", "petition"]
+            }
+          }
+        },
+        {
+          "name": "Get Rollback Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/rollback/status/:actionId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["rollback", "status", ":actionId"],
+              "variable": [{"key": "actionId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Execute Rollback",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/rollback/execute/:pollId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["rollback", "execute", ":pollId"],
+              "variable": [{"key": "pollId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Get Rollback Triggers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/rollback/triggers/:actionId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["rollback", "triggers", ":actionId"],
+              "variable": [{"key": "actionId", "value": ""}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parameters",
+      "item": [
+        {
+          "name": "Get All Parameters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/parameters",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["parameters"]
+            }
+          }
+        },
+        {
+          "name": "Get Parameter by Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/parameters/:parameterName",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["parameters", ":parameterName"],
+              "variable": [{"key": "parameterName", "value": "poll_creation_cost_general"}]
+            }
+          }
+        },
+        {
+          "name": "Validate Parameter Value",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parameterName\": \"poll_creation_cost_general\",\n  \"proposedValue\": \"750\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/parameters/validate",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["parameters", "validate"]
+            }
+          }
+        },
+        {
+          "name": "Get Parameter History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/parameters/:parameterName/history",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["parameters", ":parameterName", "history"],
+              "variable": [{"key": "parameterName", "value": "poll_creation_cost_general"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Constitution",
+      "item": [
+        {
+          "name": "Get All Articles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/constitution",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["constitution"]
+            }
+          }
+        },
+        {
+          "name": "Get Article by Number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/constitution/:articleNumber",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["constitution", ":articleNumber"],
+              "variable": [{"key": "articleNumber", "value": "1"}]
+            }
+          }
+        },
+        {
+          "name": "Validate Poll Against Constitution",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pollType\": \"parameter_vote\",\n  \"parameterName\": \"enable_shadow_voting\",\n  \"proposedValue\": \"false\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/constitution/validate-poll",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["constitution", "validate-poll"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Actions",
+      "item": [
+        {
+          "name": "Get All Actions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/actions?status=pending&limit=20",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["actions"],
+              "query": [
+                {"key": "status", "value": "pending"},
+                {"key": "limit", "value": "20"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Action by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/actions/:actionId",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["actions", ":actionId"],
+              "variable": [{"key": "actionId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Execute Action",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/actions/:actionId/execute",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["actions", ":actionId", "execute"],
+              "variable": [{"key": "actionId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Cancel Action",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"User requested cancellation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/actions/:actionId/cancel",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["actions", ":actionId", "cancel"],
+              "variable": [{"key": "actionId", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Process Scheduled Actions",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/actions/process-scheduled",
+              "host": ["{{baseUrl}}{{apiPath}}"],
+              "path": ["actions", "process-scheduled"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
