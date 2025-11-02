@@ -49,8 +49,12 @@ export const proofOfHumanityService = {
       poh = result.rows[0];
     }
 
+    if (!poh) {
+      throw new Error('Failed to initialize PoH record');
+    }
+
     // Determine required methods based on current level
-    const requiredMethods = this.getRequiredMethods(poh.level);
+    const requiredMethods = proofOfHumanityService.getRequiredMethods(poh.level);
     const completedMethods = (poh.methods_completed as VerificationMethod[]) || [];
 
     const sessionId = randomUUID();
@@ -64,12 +68,12 @@ export const proofOfHumanityService = {
       requiredMethods: requiredMethods.filter(m => !completedMethods.includes(m)),
       completedMethods,
       expiresAt,
-      score: this.calculateOverallScore(poh.scores || {
-        behavioral: 0,
-        biometric: 0,
-        social: 0,
-        temporal: 0,
-        economic: 0,
+      score: proofOfHumanityService.calculateOverallScore({
+        behavioral: poh.behavioral_score,
+        biometric: poh.biometric_score,
+        social: poh.social_score,
+        temporal: poh.temporal_score,
+        economic: poh.economic_score,
       }),
     };
   },
@@ -190,7 +194,7 @@ export const proofOfHumanityService = {
       throw new Error('Failed to retrieve updated PoH record');
     }
 
-    const newLevel = this.calculateLevel(updatedPoh);
+    const newLevel = proofOfHumanityService.calculateLevel(updatedPoh);
     if (newLevel > updatedPoh.level) {
       await query(
         'UPDATE proof_of_humanity SET level = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
@@ -222,11 +226,11 @@ export const proofOfHumanityService = {
     }
 
     const scores: PoHScores = {
-      behavioral: poh.behavioral_score,
-      biometric: poh.biometric_score,
-      social: poh.social_score,
-      temporal: poh.temporal_score,
-      economic: poh.economic_score,
+      behavioral: Number(poh.behavioral_score),
+      biometric: Number(poh.biometric_score),
+      social: Number(poh.social_score),
+      temporal: Number(poh.temporal_score),
+      economic: Number(poh.economic_score),
     };
 
     return {
@@ -266,7 +270,7 @@ export const proofOfHumanityService = {
   /**
    * Helper: Calculate overall score from 5 factors
    */
-  private calculateOverallScore(scores: PoHScores): number {
+  calculateOverallScore(scores: PoHScores): number {
     const values = Object.values(scores);
     const sum = values.reduce((a, b) => a + b, 0);
     return sum / values.length;
@@ -275,7 +279,7 @@ export const proofOfHumanityService = {
   /**
    * Helper: Get required methods for each level
    */
-  private getRequiredMethods(level: PoHLevel): VerificationMethod[] {
+  getRequiredMethods(level: PoHLevel): VerificationMethod[] {
     const requirements: Record<PoHLevel, VerificationMethod[]> = {
       0: ['captcha', 'email'],
       1: ['phone'],
@@ -291,7 +295,7 @@ export const proofOfHumanityService = {
   /**
    * Helper: Calculate level from scores
    */
-  private calculateLevel(poh: ProofOfHumanity): PoHLevel {
+  calculateLevel(poh: ProofOfHumanity): PoHLevel {
     const avgScore =
       (poh.behavioral_score +
         poh.biometric_score +

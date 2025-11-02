@@ -23,18 +23,23 @@ export interface PoHScores {
 
 export interface ProofOfHumanity {
   id: string;
-  userId: string;
-  identityMode: IdentityMode;
+  user_id: string;
+  identity_mode: IdentityMode;
   level: PoHLevel;
   status: VerificationStatus;
-  scores: PoHScores;
-  methodsCompleted: VerificationMethod[];
-  lastVerified: Date | null;
-  nextReverification: Date | null;
-  expiresAt: Date | null;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  behavioral_score: number;
+  biometric_score: number;
+  social_score: number;
+  temporal_score: number;
+  economic_score: number;
+  methods_completed: VerificationMethod[];
+  last_verified: Date | null;
+  next_reverification: Date | null;
+  expires_at: Date | null;
+  verification_data: Record<string, any>;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface PoHSession {
@@ -75,32 +80,34 @@ export type ResolutionOutcome = 'truthful' | 'false' | 'inconclusive';
 
 export interface VeracityBond {
   id: string;
-  userId: string;
-  identityMode: IdentityMode;
-  bondType: BondType;
-  targetId: string;
-  targetType: string;
-  gratiumAmount: bigint;
+  user_id: string;
+  identity_mode: IdentityMode;
+  bond_type: BondType;
+  target_id: string;
+  target_type: string;
+  gratium_amount: bigint;
   status: BondStatus;
-  claimText?: string;
-  confidenceLevel: number; // 1-10
-  createdAt: Date;
-  updatedAt: Date;
-  expiresAt: Date;
-  resolvedAt: Date | null;
-  slashedAmount: bigint;
+  claim_text?: string;
+  confidence_level: number; // 1-10
+  created_at: Date;
+  updated_at: Date;
+  expires_at: Date;
+  resolved_at: Date | null;
+  resolution_evidence?: Record<string, any>;
+  slashed_amount: bigint;
 }
 
 export interface BondChallenge {
   id: string;
-  bondId: string;
-  challengerId: string;
-  challengeAmount: bigint;
-  challengeReason: string;
+  bond_id: string;
+  challenger_id: string;
+  challenge_amount: bigint;
+  challenge_reason: string;
   evidence: Record<string, any>;
   status: 'pending' | 'accepted' | 'rejected';
-  createdAt: Date;
-  resolvedAt: Date | null;
+  created_at: Date;
+  resolved_at: Date | null;
+  resolution_notes?: string;
 }
 
 export interface BondResolution {

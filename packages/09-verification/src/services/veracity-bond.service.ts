@@ -151,7 +151,7 @@ export const veracityBondService = {
     // Check challenge amount
     if (amount < bond.gratium_amount) {
       throw new Error(
-        `Challenge amount (${amount}) must match or exceed bond amount (${bond.gratium_amount})`
+        `Challenge amount must match or exceed bond amount`
       );
     }
 
@@ -203,7 +203,7 @@ export const veracityBondService = {
         [bondId, 'pending']
       );
 
-      const challengerIds = challenges.rows.map(c => c.challenger_id);
+      const challengerIds = challenges.rows.map((c: BondChallenge) => c.challenger_id);
 
       // Update bond with resolution
       await query(
