@@ -22,7 +22,7 @@ import {
 // ROUTER SETUP
 // ============================================================================
 
-const router = Router();
+const router: Router = Router();
 
 // Multer configuration for file uploads
 const upload = multer({

@@ -3,12 +3,12 @@
  * Admin endpoints for managing migrations and feature flags
  */
 
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 import featureFlagService from '../services/feature-flag.service';
 import dataMigrationService from '../services/data-migration.service';
 import adapterService from '../services/adapter.service';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 // ========== Feature Flag Routes ==========
 

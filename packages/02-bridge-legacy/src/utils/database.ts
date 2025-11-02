@@ -75,10 +75,10 @@ legacyPool.on('error', (err) => {
 export async function query<T = any>(
   text: string,
   params?: any[]
-): Promise<QueryResult<T>> {
+): Promise<QueryResult<any>> {
   const start = Date.now();
   try {
-    const result = await pool.query<T>(text, params);
+    const result = await pool.query(text, params);
     const duration = Date.now() - start;
 
     if (process.env.NODE_ENV === 'development') {
@@ -98,10 +98,10 @@ export async function query<T = any>(
 export async function legacyQuery<T = any>(
   text: string,
   params?: any[]
-): Promise<QueryResult<T>> {
+): Promise<QueryResult<any>> {
   const start = Date.now();
   try {
-    const result = await legacyPool.query<T>(text, params);
+    const result = await legacyPool.query(text, params);
     const duration = Date.now() - start;
 
     if (process.env.NODE_ENV === 'development') {
