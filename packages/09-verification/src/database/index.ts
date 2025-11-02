@@ -29,9 +29,9 @@ export async function closePool(): Promise<void> {
   }
 }
 
-export async function query<T = any>(text: string, params?: any[]): Promise<QueryResult<T>> {
+export async function query<T = any>(text: string, params?: any[]): Promise<QueryResult<any>> {
   const client = getPool();
-  return client.query<T>(text, params);
+  return client.query(text, params);
 }
 
 export async function queryOne<T = any>(text: string, params?: any[]): Promise<T | null> {
