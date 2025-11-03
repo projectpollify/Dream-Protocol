@@ -3,7 +3,7 @@
  * PostgreSQL connection pool and query helpers
  */
 
-import { Pool, PoolClient, QueryResult } from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
@@ -84,7 +84,7 @@ export async function closePool(): Promise<void> {
 // Query Helpers
 // ============================================================================
 
-export async function query<T = any>(
+export async function query<T extends QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {

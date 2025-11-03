@@ -15,7 +15,7 @@ import constitutionalService from '../services/constitutional.service';
 import actionService from '../services/action.service';
 import { PollStatus, PollType, VoteOption, IdentityMode } from '../types';
 
-const router = Router();
+const router: Router = Router();
 
 // ============================================================================
 // Poll Management Routes
@@ -108,8 +108,8 @@ router.get('/polls/:pollId', async (req: Request, res: Response) => {
     if (userId) {
       const votes = await voteService.getUserVotes(userId as string, pollId);
       userVotes = {
-        trueSelf: votes.trueSelf?.vote_option,
-        shadow: votes.shadow?.vote_option,
+        trueSelf: votes.trueSelf?.voteOption,
+        shadow: votes.shadow?.voteOption,
       };
       userHasVoted = !!votes.trueSelf || !!votes.shadow;
     }
@@ -160,12 +160,12 @@ router.post('/vote', async (req: Request, res: Response) => {
       success: true,
       vote: {
         id: vote.id,
-        pollId: vote.poll_id,
-        voterDid: vote.voter_did,
-        voteOption: vote.vote_option,
-        assignedSection: vote.assigned_section,
-        sectionMultiplier: vote.section_multiplier,
-        displayedVoteTime: vote.displayed_vote_time,
+        pollId: vote.pollId,
+        voterDid: vote.voterDid,
+        voteOption: vote.voteOption,
+        assignedSection: vote.assignedSection,
+        sectionMultiplier: vote.sectionMultiplier,
+        displayedVoteTime: vote.displayedVoteTime,
       },
     });
   } catch (error: any) {
@@ -198,9 +198,9 @@ router.patch('/vote', async (req: Request, res: Response) => {
       success: true,
       vote: {
         id: updatedVote.id,
-        voteOption: updatedVote.vote_option,
-        voteChangeCount: updatedVote.vote_change_count,
-        displayedVoteTime: updatedVote.displayed_vote_time,
+        voteOption: updatedVote.voteOption,
+        voteChangeCount: updatedVote.voteChangeCount,
+        displayedVoteTime: updatedVote.displayedVoteTime,
       },
     });
   } catch (error: any) {
@@ -226,12 +226,12 @@ router.get('/votes/:pollId', async (req: Request, res: Response) => {
     res.json({
       success: true,
       votes: votes.map((v) => ({
-        voterDid: v.voter_did,
-        voteOption: v.vote_option,
-        identityMode: v.identity_mode,
-        assignedSection: v.assigned_section,
-        displayedVoteTime: v.displayed_vote_time,
-        reasoning: v.reasoning_text,
+        voterDid: v.voterDid,
+        voteOption: v.voteOption,
+        identityMode: v.identityMode,
+        assignedSection: v.assignedSection,
+        displayedVoteTime: v.displayedVoteTime,
+        reasoning: v.reasoningText,
       })),
       breakdown,
     });

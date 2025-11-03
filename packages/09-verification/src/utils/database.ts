@@ -4,7 +4,7 @@
  * Standard database connection and query utilities (functional pattern)
  */
 
-import { Pool, PoolClient, QueryResult } from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -38,7 +38,7 @@ pool.on('error', (err) => {
 /**
  * Execute a single query
  */
-export async function query<T = any>(
+export async function query<T extends QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {

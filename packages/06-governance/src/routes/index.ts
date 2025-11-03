@@ -6,7 +6,7 @@
 import { Router } from 'express';
 import governanceRoutes from './governance.routes';
 
-const router = Router();
+const router: Router = Router();
 
 // Mount governance routes at /api/v1/governance
 router.use('/governance', governanceRoutes);

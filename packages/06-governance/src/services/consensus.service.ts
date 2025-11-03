@@ -107,7 +107,7 @@ export async function calculateShadowConsensus(
     sampleSize: trueSelfData.total_count + shadowData.total_count,
 
     trendDirection,
-    notablePatterns: null,
+    notablePatterns: undefined,
 
     recordedAt: new Date(),
   };

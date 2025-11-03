@@ -219,9 +219,9 @@ export async function changeVote(
     const existingVote = existingVoteResult.rows[0];
 
     // Check if already at max changes
-    if (existingVote.vote_change_count >= existingVote.max_vote_changes) {
+    if (existingVote.voteChangeCount >= existingVote.maxVoteChanges) {
       throw new Error(
-        `Maximum vote changes reached (${existingVote.max_vote_changes}). Vote is now final.`
+        `Maximum vote changes reached (${existingVote.maxVoteChanges}). Vote is now final.`
       );
     }
 
@@ -282,15 +282,15 @@ export async function changeVote(
     await updatePollVoteTotals(
       client,
       pollId,
-      existingVote.vote_option,
-      existingVote.final_vote_weight,
+      existingVote.voteOption,
+      existingVote.finalVoteWeight,
       'subtract'
     );
     await updatePollVoteTotals(
       client,
       pollId,
       newVoteOption,
-      updatedVote.final_vote_weight,
+      updatedVote.finalVoteWeight,
       'add'
     );
 
@@ -318,9 +318,9 @@ export async function getUserVotes(
   const votes: { trueSelf?: GovernanceVote; shadow?: GovernanceVote } = {};
 
   for (const vote of result.rows) {
-    if (vote.identity_mode === IdentityMode.TRUE_SELF) {
+    if (vote.identityMode === IdentityMode.TRUE_SELF) {
       votes.trueSelf = vote;
-    } else if (vote.identity_mode === IdentityMode.SHADOW) {
+    } else if (vote.identityMode === IdentityMode.SHADOW) {
       votes.shadow = vote;
     }
   }
@@ -375,7 +375,7 @@ async function updatePollVoteTotals(
   const modifier = operation === 'add' ? '+' : '-';
 
   let baseColumn: string;
-  let weightedColumn: string;
+  let weightedColumn: string | null;
 
   switch (voteOption) {
     case VoteOption.YES:

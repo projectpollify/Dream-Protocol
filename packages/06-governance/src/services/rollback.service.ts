@@ -17,6 +17,7 @@ import {
   ActionStatus,
   PollType,
   PollStatus,
+  GovernanceActionType,
 } from '../types';
 
 // ============================================================================
@@ -546,7 +547,8 @@ function isWithinRollbackWindow(action: GovernanceAction): boolean {
 
   if (!action.rollbackWindowExpiresAt) {
     // Calculate expiration based on action type
-    const windowHours = action.actionType === 'constitutional'
+    // TODO: Add CONSTITUTIONAL to GovernanceActionType enum if needed
+    const windowHours = action.actionType === GovernanceActionType.CUSTOM_ACTION
       ? CONSTITUTIONAL_ROLLBACK_WINDOW_HOURS
       : STANDARD_ROLLBACK_WINDOW_HOURS;
 
@@ -587,7 +589,8 @@ export async function getRollbackStatus(actionId: string): Promise<{
   let hoursRemaining: number | undefined;
 
   if (action.executedAt) {
-    const windowHours = action.actionType === 'constitutional'
+    // TODO: Add CONSTITUTIONAL to GovernanceActionType enum if needed
+    const windowHours = action.actionType === GovernanceActionType.CUSTOM_ACTION
       ? CONSTITUTIONAL_ROLLBACK_WINDOW_HOURS
       : STANDARD_ROLLBACK_WINDOW_HOURS;
 

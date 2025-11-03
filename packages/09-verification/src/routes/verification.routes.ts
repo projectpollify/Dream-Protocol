@@ -9,7 +9,7 @@ import { veracityBondService } from '../services/veracity-bond.service';
 import { PredictionMarketService } from '../services/prediction-market.service';
 import { EpistemicScoringService } from '../services/epistemic-scoring.service';
 
-const router = Router();
+const router: Router = Router();
 
 // ============================================================================
 // Proof of Humanity Routes
