@@ -1,6 +1,12 @@
-// API Client for Dream Protocol Governance Module
+// API Client for Dream Protocol
+// Connects to unified API Gateway on port 3001
 
-const API_BASE_URL = 'http://localhost:3005/api/v1/governance';
+const API_GATEWAY_URL =
+  typeof window !== 'undefined'
+    ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    : 'http://localhost:3001';
+
+const API_BASE_URL = `${API_GATEWAY_URL}/api/v1/governance`;
 
 export interface Parameter {
   id: string;
@@ -110,12 +116,25 @@ export async function validatePoll(
 
 // Health check
 export async function healthCheck() {
-  const response = await fetch('http://localhost:3005/health', {
+  const response = await fetch(`${API_GATEWAY_URL}/health`, {
     cache: 'no-store',
   });
 
   if (!response.ok) {
     throw new Error('Health check failed');
+  }
+
+  return response.json();
+}
+
+// Gateway info
+export async function getGatewayInfo() {
+  const response = await fetch(`${API_GATEWAY_URL}/info`, {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch gateway info');
   }
 
   return response.json();
