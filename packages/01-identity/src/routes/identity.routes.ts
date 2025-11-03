@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { identityService } from '../services/identity.service';
+import identityService from '../services/identity.service';
 import { IdentityMode, IdentityError } from '../types/identity.types';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * POST /api/v1/identity/create-dual
