@@ -45,5 +45,11 @@
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    }
   }
 }

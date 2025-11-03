@@ -3,15 +3,14 @@
  * Unified entry point for all backend modules
  *
  * This gateway:
- * - Listens on port 3001 (public-facing)
- * - Routes requests to backend modules on ports 3002-3010
+ * - Listens on port 3001 (ONLY backend server)
+ * - Mounts all module routers directly (NO proxying)
  * - Handles CORS, authentication, and error handling
  * - Provides health checks and monitoring
  */
 
 import express, { Request, Response, NextFunction, Express } from 'express';
 import cors from 'cors';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import dotenv from 'dotenv';
 
 import { loadConfig } from './config';
@@ -21,6 +20,18 @@ import {
   handlePing,
   handleInfo,
 } from './health';
+
+// Import all module routers
+import { createIdentityRouter } from '@dream/identity';
+import { createBridgeRouter } from '@dream/bridge-legacy';
+import { createUserRouter } from '@dream/user';
+import { createEconomyRouter } from '@dream/economy';
+import { createExchangeRouter } from '@dream/token-exchange';
+import { createGovernanceRouter } from '@dream/governance';
+import { createContentRouter } from '@dream/content';
+import { createSocialRouter } from '@dream/social';
+import { createVerificationRouter } from '@dream/verification';
+import { createAnalyticsRouter } from '@dream/analytics';
 
 // Load environment variables
 dotenv.config();
@@ -77,59 +88,23 @@ app.get('/info', (req: Request, res: Response) => {
 // ==================== MODULE ROUTING ====================
 
 /**
- * Create and register proxy middleware for each module
+ * Mount module routers directly (no proxying to separate servers)
+ * Each module exports a createRouter() function that returns an Express Router
  */
-config.modules.forEach((module) => {
-  const target = `http://localhost:${module.internalPort}`;
 
-  app.use(
-    module.basePath,
-    createProxyMiddleware({
-      target,
-      changeOrigin: true,
-      pathRewrite: {
-        [`^${module.basePath}`]: '', // Remove base path when forwarding
-      },
-      onProxyReq: (proxyReq: any, req: Request) => {
-        // Forward request headers
-        if (req.body && Object.keys(req.body).length > 0) {
-          const bodyData = JSON.stringify(req.body);
-          proxyReq.setHeader('Content-Type', 'application/json');
-          proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-          proxyReq.write(bodyData);
-        }
+// Mount all module routers
+app.use('/api/v1/identity', createIdentityRouter());
+app.use('/api/v1/bridge', createBridgeRouter());
+app.use('/api/v1/users', createUserRouter());
+app.use('/api/v1/economy', createEconomyRouter());
+app.use('/api/v1/exchange', createExchangeRouter());
+app.use('/api/v1/governance', createGovernanceRouter());
+app.use('/api/v1/content', createContentRouter());
+app.use('/api/v1/social', createSocialRouter());
+app.use('/api/v1/verification', createVerificationRouter());
+app.use('/api/v1/analytics', createAnalyticsRouter());
 
-        // Add gateway headers for debugging
-        proxyReq.setHeader('X-Forwarded-By', 'Dream-Protocol-Gateway');
-        proxyReq.setHeader('X-Module', module.name);
-      },
-      onProxyRes: (proxyRes: any) => {
-        // Add response header indicating which module served the request
-        proxyRes.headers['X-Served-By'] = module.name;
-      },
-      onError: (err: Error, req: Request, res: Response) => {
-        logger.error(
-          `Proxy error for ${module.name}:${module.internalPort}`,
-          err.message
-        );
-
-        if (!res.headersSent) {
-          res.status(503).json({
-            success: false,
-            error: `Module "${module.name}" is unavailable`,
-            details: err.message,
-            module: module.name,
-            timestamp: new Date().toISOString(),
-          });
-        }
-      },
-    })
-  );
-
-  logger.info(
-    `Registered route: ${module.basePath} -> localhost:${module.internalPort} (${module.name})`
-  );
-});
+logger.info('✓ Mounted 10 module routers');
 
 // ==================== 404 HANDLER ====================
 
@@ -161,21 +136,32 @@ const PORT = config.gatewayPort;
 const HOST = '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
-  logger.info(`🚀 Dream Protocol API Gateway started`);
-  logger.info(`📍 Listening on http://localhost:${PORT}`);
-  logger.info(`🌍 CORS enabled for: ${config.corsOrigin.join(', ')}`);
-  logger.info(`🔧 Environment: ${config.nodeEnv}`);
-  logger.info(`📦 Routing to ${config.modules.length} backend modules`);
   logger.info('');
-  logger.info('Available endpoints:');
-  logger.info('  GET  /ping          - Health check');
-  logger.info('  GET  /health        - Detailed health status');
-  logger.info('  GET  /info          - Gateway information');
+  logger.info('═══════════════════════════════════════════════════════════');
+  logger.info('   🚀 DREAM PROTOCOL - API GATEWAY');
+  logger.info('═══════════════════════════════════════════════════════════');
+  logger.info(`   📍 Listening on: http://localhost:${PORT}`);
+  logger.info(`   🌍 CORS Origins: ${config.corsOrigin.join(', ')}`);
+  logger.info(`   🔧 Environment: ${config.nodeEnv}`);
+  logger.info(`   📦 Modules: 10 routers mounted (NO separate servers)`);
   logger.info('');
-  logger.info('Backend modules:');
-  config.modules.forEach((m) => {
-    logger.info(`  ${m.basePath.padEnd(25)} -> :${m.internalPort} (${m.name})`);
-  });
+  logger.info('   Gateway Endpoints:');
+  logger.info('     GET  /ping          - Health check');
+  logger.info('     GET  /health        - Detailed health status');
+  logger.info('     GET  /info          - Gateway information');
+  logger.info('');
+  logger.info('   Module Routes (all in-process):');
+  logger.info('     /api/v1/identity       - Identity & Dual Wallets');
+  logger.info('     /api/v1/bridge         - Legacy MVP Bridge');
+  logger.info('     /api/v1/users          - User Profiles & Settings');
+  logger.info('     /api/v1/economy        - Token Economy');
+  logger.info('     /api/v1/exchange       - Token Exchange');
+  logger.info('     /api/v1/governance     - Governance & Voting');
+  logger.info('     /api/v1/content        - Posts & Discussions');
+  logger.info('     /api/v1/social         - Social Interactions');
+  logger.info('     /api/v1/verification   - Verification & Truth Systems');
+  logger.info('     /api/v1/analytics      - Analytics & Insights');
+  logger.info('═══════════════════════════════════════════════════════════');
   logger.info('');
 });
 

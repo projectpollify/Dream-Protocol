@@ -4,6 +4,12 @@
   "description": "Module 03: User profiles, settings, and account management for Dream Protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",

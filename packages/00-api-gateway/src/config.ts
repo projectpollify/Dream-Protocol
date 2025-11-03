@@ -94,7 +94,7 @@ export function loadConfig(): GatewayConfig {
     | 'production'
     | 'test';
 
-  const gatewayPort = parseInt(process.env.API_GATEWAY_PORT || '3011');
+  const gatewayPort = parseInt(process.env.PORT || process.env.API_GATEWAY_PORT || '3001');
   const corsOrigin = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
     : nodeEnv === 'production'

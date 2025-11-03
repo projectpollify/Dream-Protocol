@@ -2,9 +2,12 @@
  * Module 02: Bridge Legacy - Main Entry Point
  *
  * Exports all services, types, and routes for the Bridge Legacy module
+ *
+ * This module is a LIBRARY - it does NOT run its own server
+ * The API Gateway mounts the router exported by createBridgeRouter()
  */
 
-import express, { Express } from 'express';
+import { Router } from 'express';
 import dotenv from 'dotenv';
 import bridgeRoutes from './routes/bridge.routes';
 import { checkDatabaseConnections, closeDatabaseConnections } from './utils/database';
@@ -39,22 +42,15 @@ export * from './utils/database';
 export { bridgeRoutes };
 
 // ============================================================================
-// MODULE INITIALIZATION
+// ROUTER EXPORT (Main entry point for API Gateway)
 // ============================================================================
 
 /**
- * Initialize the Bridge Legacy module
- * @param app Express application instance
- * @param basePath Base path for routes (default: /api/v1/bridge)
+ * Create and return the Bridge router
+ * This is the PRIMARY export used by the API Gateway
  */
-export function initializeBridgeModule(
-  app: Express,
-  basePath: string = '/api/v1/bridge'
-): void {
-  // Register routes
-  app.use(basePath, bridgeRoutes);
-
-  console.log(`✓ Bridge Legacy module initialized at ${basePath}`);
+export function createBridgeRouter(): Router {
+  return bridgeRoutes;
 }
 
 /**
@@ -69,140 +65,22 @@ export async function checkHealth(): Promise<{
 }
 
 // ============================================================================
-// STANDALONE SERVER (for development/testing)
+// LEGACY EXPORTS (deprecated - use createBridgeRouter instead)
 // ============================================================================
 
 /**
- * Start standalone server for module testing
+ * @deprecated Use createBridgeRouter() instead
  */
-export async function startStandaloneServer(port: number = 3002): Promise<void> {
-  const app = express();
-
-  // Middleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-
-  // CORS (development only)
-  app.use((_req, res, next) => {
-    res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-    );
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    if (_req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-
-  // Initialize module
-  initializeBridgeModule(app);
-
-  // Root endpoint
-  app.get('/', (_req, res) => {
-    res.json({
-      module: 'bridge-legacy',
-      version: '1.0.0',
-      status: 'running',
-      endpoints: [
-        'GET /api/v1/bridge/feature-flags',
-        'GET /api/v1/bridge/feature-flags/:flagName',
-        'GET /api/v1/bridge/feature-flags/all/admin',
-        'POST /api/v1/bridge/feature-flags',
-        'PATCH /api/v1/bridge/feature-flags/:flagName/percentage',
-        'POST /api/v1/bridge/feature-flags/:flagName/enable',
-        'POST /api/v1/bridge/feature-flags/:flagName/disable',
-        'POST /api/v1/bridge/feature-flags/:flagName/whitelist',
-        'DELETE /api/v1/bridge/feature-flags/:flagName/whitelist/:userId',
-        'POST /api/v1/bridge/migration/start',
-        'POST /api/v1/bridge/migration/validate',
-        'POST /api/v1/bridge/migration/rollback',
-        'GET /api/v1/bridge/rollout-status',
-        'GET /api/v1/bridge/rollout-status/:flagName',
-        'GET /api/v1/bridge/health',
-      ],
-    });
-  });
-
-  // Health check endpoint
-  app.get('/health', async (_req, res) => {
-    const health = await checkHealth();
-    res.json({
-      status: health.newDb && health.legacyDb ? 'ok' : 'degraded',
-      module: 'bridge-legacy',
-      databases: {
-        new: health.newDb,
-        legacy: health.legacyDb,
-      },
-      errors: health.errors,
-      timestamp: new Date().toISOString(),
-    });
-  });
-
-  // Error handling middleware
-  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? err.message : undefined,
-    });
-  });
-
-  // Health check database
-  const health = await checkHealth();
-  if (!health.newDb || !health.legacyDb) {
-    console.error('❌ Database health check failed');
-    console.error('New DB:', health.newDb ? '✓' : '✗');
-    console.error('Legacy DB:', health.legacyDb ? '✓' : '✗');
-    if (health.errors.length > 0) {
-      health.errors.forEach((error) => console.error('  -', error));
-    }
-    process.exit(1);
-  }
-
-  // Start server
-  app.listen(port, () => {
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('   🌉 DREAM PROTOCOL - MODULE 02: BRIDGE LEGACY');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log(`   Status: Running`);
-    console.log(`   Port: ${port}`);
-    console.log(`   Base Path: /api/v1/bridge`);
-    console.log(`   New Database: Connected ✓`);
-    console.log(`   Legacy Database: Connected ✓ (READ-ONLY)`);
-    console.log('');
-    console.log('   Available Services:');
-    console.log('   - Feature Flag Management (Gradual Rollout)');
-    console.log('   - Data Migration (MVP → Dream Protocol)');
-    console.log('   - API Adapter (Request Routing)');
-    console.log('   - Migration Validation & Rollback');
-    console.log('   - Dual Database Access (New + Legacy)');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('');
-  });
-
-  // Handle shutdown gracefully
-  const shutdownHandler = async () => {
-    console.log('\nShutting down gracefully...');
-    await closeDatabaseConnections();
-    process.exit(0);
-  };
-
-  process.on('SIGTERM', shutdownHandler);
-  process.on('SIGINT', shutdownHandler);
+export function initializeBridgeModule(
+  app: any,
+  basePath: string = '/api/v1/bridge'
+): void {
+  console.warn('⚠️  initializeBridgeModule is deprecated. Use createBridgeRouter() instead.');
+  app.use(basePath, bridgeRoutes);
 }
 
 // ============================================================================
-// RUN STANDALONE SERVER (if executed directly)
+// NO STANDALONE SERVER
 // ============================================================================
-
-if (require.main === module) {
-  const port = parseInt(process.env.API_PORT || process.env.PORT || '3002');
-  startStandaloneServer(port).catch((error) => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  });
-}
+// This module is a library and does NOT run its own server.
+// Use createBridgeRouter() to get the router for mounting in API Gateway.

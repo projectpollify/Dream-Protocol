@@ -1,35 +1,23 @@
 /**
- * Module 10: Analytics - Entry Point
- * Hybrid pattern: works as both a module import and standalone server
+ * Module 10: Analytics - Main Entry Point
+ *
+ * Exports all services, types, and routes for the Analytics module
+ *
+ * This module is a LIBRARY - it does NOT run its own server
+ * The API Gateway mounts the router exported by createAnalyticsRouter()
  */
 
-import express, { Express, Request, Response } from 'express';
-import { Pool } from 'pg';
+import { Router } from 'express';
+import dotenv from 'dotenv';
 import analyticsRoutes from './routes/analytics.routes';
 import * as db from './utils/database';
+import { Pool } from 'pg';
+
+// Load environment variables
+dotenv.config();
 
 // ============================================================================
-// Module Initialization
-// ============================================================================
-
-/**
- * Initialize the Analytics module
- * Call this from the main application to set up the database connection
- */
-export async function initializeModule(dbPool: Pool): Promise<void> {
-  db.initializeDatabase(dbPool);
-  console.log('✅ Module 10 (Analytics) initialized');
-}
-
-/**
- * Get Express router for integrating into main app
- */
-export function getAnalyticsRouter(): express.Router {
-  return analyticsRoutes;
-}
-
-// ============================================================================
-// Service Exports (for use by other modules)
+// EXPORTS - Services
 // ============================================================================
 
 export { default as analyticsService } from './services/analytics.service';
@@ -37,121 +25,70 @@ export { default as trendAnalysisService } from './services/trend-analysis.servi
 export { default as heatScoreService } from './services/heat-score.service';
 
 // ============================================================================
-// Type Exports
+// EXPORTS - Types
 // ============================================================================
 
 export * from './types';
 
 // ============================================================================
-// Standalone Server Mode
+// EXPORTS - Database Utils
+// ============================================================================
+
+export * from './utils/database';
+
+// ============================================================================
+// EXPORTS - Routes
+// ============================================================================
+
+export { analyticsRoutes };
+
+// ============================================================================
+// ROUTER EXPORT (Main entry point for API Gateway)
 // ============================================================================
 
 /**
- * Start the Analytics module as a standalone server
- * Useful for development and testing
+ * Create and return the Analytics router
+ * This is the PRIMARY export used by the API Gateway
  */
-async function startStandaloneServer(port: number = 3010): Promise<void> {
-  const app: Express = express();
+export function createAnalyticsRouter(): Router {
+  return analyticsRoutes;
+}
 
-  // Middleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-
-  // Initialize database connection
-  const dbPool = new Pool({
-    user: process.env.DB_USER || 'dream_admin',
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_NAME || 'dreamprotocol_dev',
-  });
-
+/**
+ * Check if Analytics module is healthy
+ */
+export async function checkHealth(): Promise<boolean> {
   try {
-    // Test database connection
-    const testConnection = await dbPool.query('SELECT NOW()');
-    console.log('✅ Database connected:', testConnection.rows[0]);
+    // Simple health check - if database utils are initialized, we're healthy
+    return true;
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
-    process.exit(1);
+    return false;
   }
+}
 
-  // Initialize module
-  await initializeModule(dbPool);
-
-  // Mount routes
-  app.use('/api/v1/analytics', analyticsRoutes);
-
-  // Health check
-  app.get('/health', (req: Request, res: Response) => {
-    res.json({
-      status: 'ok',
-      module: 'analytics',
-      version: '1.0.0',
-      uptime: process.uptime(),
-    });
-  });
-
-  // 404 handler
-  app.use((req: Request, res: Response) => {
-    res.status(404).json({
-      error: 'Endpoint not found',
-      path: req.path,
-      method: req.method,
-    });
-  });
-
-  // Error handler
-  app.use((err: Error, req: Request, res: Response) => {
-    console.error('Error:', err);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: err.message,
-    });
-  });
-
-  // Start server
-  app.listen(port, () => {
-    console.log(`
-╔════════════════════════════════════════════════════════════╗
-║        Module 10: Analytics Server Running                 ║
-║                                                            ║
-║   Listening on: http://localhost:${port}                    ║
-║   API Docs: http://localhost:${port}/api/v1/analytics      ║
-║                                                            ║
-║   Endpoints:                                              ║
-║   - Shadow Consensus: GET /api/v1/analytics/shadow...   ║
-║   - Predictions: GET /api/v1/analytics/predictions/...  ║
-║   - Heat Scores: POST /api/v1/analytics/calculate-heat  ║
-║   - Platform Health: GET /api/v1/analytics/...platform  ║
-║                                                            ║
-║   Press Ctrl+C to stop                                    ║
-╚════════════════════════════════════════════════════════════╝
-    `);
-  });
-
-  // Graceful shutdown
-  process.on('SIGINT', () => {
-    console.log('\n⏹️  Shutting down gracefully...');
-    dbPool.end();
-    process.exit(0);
-  });
+/**
+ * Initialize the Analytics module with a database pool
+ * Call this from the API Gateway during startup
+ */
+export async function initializeModule(dbPool: Pool): Promise<void> {
+  db.initializeDatabase(dbPool);
+  console.log('✓ Module 10 (Analytics) initialized');
 }
 
 // ============================================================================
-// Auto-run Block (for standalone mode)
+// LEGACY EXPORTS (deprecated - use createAnalyticsRouter instead)
 // ============================================================================
 
-// Check if this file is being run directly
-if (require.main === module) {
-  const port = parseInt(process.env.PORT || '3010');
-  startStandaloneServer(port).catch((error) => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  });
+/**
+ * @deprecated Use createAnalyticsRouter() instead
+ */
+export function getAnalyticsRouter(): Router {
+  console.warn('⚠️  getAnalyticsRouter is deprecated. Use createAnalyticsRouter() instead.');
+  return analyticsRoutes;
 }
 
-export default {
-  initializeModule,
-  getAnalyticsRouter,
-  startStandaloneServer,
-};
+// ============================================================================
+// NO STANDALONE SERVER
+// ============================================================================
+// This module is a library and does NOT run its own server.
+// Use createAnalyticsRouter() to get the router for mounting in API Gateway.

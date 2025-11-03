@@ -2,9 +2,12 @@
  * Module 01: Identity - Main Entry Point
  *
  * Exports all services, types, and routes for the Identity module
+ *
+ * This module is a LIBRARY - it does NOT run its own server
+ * The API Gateway mounts the router exported by createIdentityRouter()
  */
 
-import express, { Express } from 'express';
+import { Router } from 'express';
 import dotenv from 'dotenv';
 import identityRoutes from './routes/identity.routes';
 import { healthCheck, closePool } from './utils/database';
@@ -44,22 +47,15 @@ export * from './utils/encryption';
 export { identityRoutes };
 
 // ============================================================================
-// MODULE INITIALIZATION
+// ROUTER EXPORT (Main entry point for API Gateway)
 // ============================================================================
 
 /**
- * Initialize the Identity module
- * @param app Express application instance
- * @param basePath Base path for routes (default: /api/v1/identity)
+ * Create and return the Identity router
+ * This is the PRIMARY export used by the API Gateway
  */
-export function initializeIdentityModule(
-  app: Express,
-  basePath: string = '/api/v1/identity'
-): void {
-  // Register routes
-  app.use(basePath, identityRoutes);
-
-  console.log(`✓ Identity module initialized at ${basePath}`);
+export function createIdentityRouter(): Router {
+  return identityRoutes;
 }
 
 /**
@@ -70,120 +66,22 @@ export async function checkHealth(): Promise<boolean> {
 }
 
 // ============================================================================
-// STANDALONE SERVER (for development/testing)
+// LEGACY EXPORTS (deprecated - use createIdentityRouter instead)
 // ============================================================================
 
 /**
- * Start standalone server for module testing
+ * @deprecated Use createIdentityRouter() instead
  */
-export async function startStandaloneServer(port: number = 3001): Promise<void> {
-  const app = express();
-
-  // Middleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-
-  // CORS (development only)
-  app.use((_req, res, next) => {
-    res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-    );
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    if (_req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-
-  // Initialize module
-  initializeIdentityModule(app);
-
-  // Root endpoint
-  app.get('/', (_req, res) => {
-    res.json({
-      module: 'identity',
-      version: '1.0.0',
-      status: 'running',
-      network: process.env.CARDANO_NETWORK || 'testnet',
-      endpoints: [
-        'POST /api/v1/identity/create',
-        'GET /api/v1/identity/:userId',
-        'POST /api/v1/identity/switch-mode',
-        'GET /api/v1/identity/did/:userId',
-        'GET /api/v1/identity/health',
-      ],
-    });
-  });
-
-  // Health check endpoint
-  app.get('/health', (_req, res) => {
-    res.json({
-      status: 'ok',
-      module: 'identity',
-      timestamp: new Date().toISOString(),
-    });
-  });
-
-  // Error handling middleware
-  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? err.message : undefined,
-    });
-  });
-
-  // Health check database
-  const healthy = await checkHealth();
-  if (!healthy) {
-    console.error('❌ Database health check failed');
-    process.exit(1);
-  }
-
-  // Start server
-  app.listen(port, () => {
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('   🆔 DREAM PROTOCOL - MODULE 01: IDENTITY');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log(`   Status: Running`);
-    console.log(`   Port: ${port}`);
-    console.log(`   Base Path: /api/v1/identity`);
-    console.log(`   Database: Connected ✓`);
-    console.log(`   Network: ${process.env.CARDANO_NETWORK || 'testnet'}`);
-    console.log('');
-    console.log('   Available Services:');
-    console.log('   - Dual Identity Creation (True Self + Shadow)');
-    console.log('   - Cardano Wallet Generation');
-    console.log('   - DID (Decentralized Identifier) Management');
-    console.log('   - Identity Mode Switching');
-    console.log('   - Encrypted Key Storage');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('');
-  });
-
-  // Handle shutdown gracefully
-  const shutdownHandler = async () => {
-    console.log('\nShutting down gracefully...');
-    await closePool();
-    process.exit(0);
-  };
-
-  process.on('SIGTERM', shutdownHandler);
-  process.on('SIGINT', shutdownHandler);
+export function initializeIdentityModule(
+  app: any,
+  basePath: string = '/api/v1/identity'
+): void {
+  console.warn('⚠️  initializeIdentityModule is deprecated. Use createIdentityRouter() instead.');
+  app.use(basePath, identityRoutes);
 }
 
 // ============================================================================
-// RUN STANDALONE SERVER (if executed directly)
+// NO STANDALONE SERVER
 // ============================================================================
-
-if (require.main === module) {
-  const port = parseInt(process.env.API_PORT || process.env.PORT || '3001');
-  startStandaloneServer(port).catch((error) => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  });
-}
+// This module is a library and does NOT run its own server.
+// Use createIdentityRouter() to get the router for mounting in API Gateway.

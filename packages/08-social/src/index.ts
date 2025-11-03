@@ -1,81 +1,83 @@
 /**
- * Module 08: Social
- * Reactions, follows, notifications & activity feeds with dual-identity support for Dream Protocol
+ * Module 08: Social - Main Entry Point
+ *
+ * Exports all services, types, and routes for the Social module
+ *
+ * This module is a LIBRARY - it does NOT run its own server
+ * The API Gateway mounts the router exported by createSocialRouter()
  */
 
-import express, { Express } from 'express';
+import { Router } from 'express';
 import * as dotenv from 'dotenv';
 import socialRoutes from './routes/social.routes';
 import { healthCheck } from './utils/database';
 
 dotenv.config();
 
-const app: Express = express();
-const PORT = process.env.PORT || 3008;
+// ============================================================================
+// EXPORTS - Services
+// ============================================================================
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Health check endpoint
-app.get('/health', async (req, res) => {
-  const dbHealthy = await healthCheck();
-  if (dbHealthy) {
-    res.json({
-      status: 'healthy',
-      module: 'social',
-      database: 'connected',
-      timestamp: new Date().toISOString(),
-    });
-  } else {
-    res.status(503).json({
-      status: 'unhealthy',
-      module: 'social',
-      database: 'disconnected',
-      timestamp: new Date().toISOString(),
-    });
-  }
-});
-
-// API Routes
-app.use('/api/v1/social', socialRoutes);
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
-});
-
-// Error handler
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error('[Error]', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-// Start server (only if not in test mode)
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`✅ Module 08: Social server running on port ${PORT}`);
-    console.log(`👍 POST    /api/v1/social/reactions`);
-    console.log(`🗑️  DELETE  /api/v1/social/reactions/:id`);
-    console.log(`👥 POST    /api/v1/social/follows`);
-    console.log(`👋 DELETE  /api/v1/social/follows`);
-    console.log(`🔔 GET     /api/v1/social/notifications`);
-    console.log(`📰 GET     /api/v1/social/feed`);
-    console.log(`🔥 GET     /api/v1/social/trending`);
-    console.log(`🚫 POST    /api/v1/social/blocks`);
-    console.log(`🏥 GET     /health`);
-  });
-}
-
-// Export for testing
-export default app;
-
-// Export services for other modules
 export { default as reactionService } from './services/reaction.service';
 export { default as followService } from './services/follow.service';
 export { default as notificationService } from './services/notification.service';
 export { default as feedService } from './services/feed.service';
 export { default as blockService } from './services/block.service';
 
-// Export types
+// ============================================================================
+// EXPORTS - Types
+// ============================================================================
+
 export * from './types';
+
+// ============================================================================
+// EXPORTS - Database Utils
+// ============================================================================
+
+export * from './utils/database';
+
+// ============================================================================
+// EXPORTS - Routes
+// ============================================================================
+
+export { socialRoutes };
+
+// ============================================================================
+// ROUTER EXPORT (Main entry point for API Gateway)
+// ============================================================================
+
+/**
+ * Create and return the Social router
+ * This is the PRIMARY export used by the API Gateway
+ */
+export function createSocialRouter(): Router {
+  return socialRoutes;
+}
+
+/**
+ * Check if Social module is healthy
+ */
+export async function checkHealth(): Promise<boolean> {
+  return healthCheck();
+}
+
+// ============================================================================
+// LEGACY EXPORTS (deprecated - use createSocialRouter instead)
+// ============================================================================
+
+/**
+ * @deprecated Use createSocialRouter() instead
+ */
+export function initializeSocialModule(
+  app: any,
+  basePath: string = '/api/v1/social'
+): void {
+  console.warn('⚠️  initializeSocialModule is deprecated. Use createSocialRouter() instead.');
+  app.use(basePath, socialRoutes);
+}
+
+// ============================================================================
+// NO STANDALONE SERVER
+// ============================================================================
+// This module is a library and does NOT run its own server.
+// Use createSocialRouter() to get the router for mounting in API Gateway.

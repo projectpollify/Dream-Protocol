@@ -12,16 +12,24 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@dream/identity": "workspace:*",
+    "@dream/bridge-legacy": "workspace:*",
+    "@dream/user": "workspace:*",
+    "@dream/economy": "workspace:*",
+    "@dream/token-exchange": "workspace:*",
+    "@dream/governance": "workspace:*",
+    "@dream/content": "workspace:*",
+    "@dream/social": "workspace:*",
+    "@dream/verification": "workspace:*",
+    "@dream/analytics": "workspace:*",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
-    "express": "^4.18.2",
-    "http-proxy-middleware": "^2.0.6"
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/http-proxy": "^1.17.14",
     "@types/node": "^20.11.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
