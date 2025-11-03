@@ -1,4 +1,5 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "commonjs",
@@ -15,6 +16,7 @@
     "sourceMap": true,
     "moduleResolution": "node",
     "types": ["node"],
+    "composite": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
