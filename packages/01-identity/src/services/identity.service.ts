@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import { db } from '../utils/database';
-import { cardanoService } from './cardano.service';
+import * as db from '../utils/database';
+import cardanoService from './cardano.service';
 import { encrypt, encryptWithMasterKey, hashIPAddress, generateToken } from '../utils/encryption';
 import {
   DualIdentity,
@@ -174,11 +174,12 @@ export class IdentityService {
     } catch (error) {
       await client.query('ROLLBACK');
       console.error('Failed to create dual identity:', error);
+      const err = error as Error;
       throw new IdentityError(
         'Failed to create dual identity',
         'DUAL_IDENTITY_CREATE_FAILED',
         500,
-        { userId, error: error.message }
+        { userId, error: err.message }
       );
     } finally {
       client.release();
@@ -312,11 +313,12 @@ export class IdentityService {
       };
     } catch (error) {
       console.error('Failed to create session:', error);
+      const err = error as Error;
       throw new IdentityError(
         'Failed to create session',
         'SESSION_CREATE_FAILED',
         500,
-        { userId, error: error.message }
+        { userId, error: err.message }
       );
     }
   }

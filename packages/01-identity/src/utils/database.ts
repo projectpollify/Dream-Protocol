@@ -4,7 +4,7 @@
  * Standard database connection and query utilities (functional pattern)
  */
 
-import { Pool, PoolClient, QueryResult } from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -38,7 +38,7 @@ pool.on('error', (err) => {
 /**
  * Execute a single query
  */
-export async function query<T = any>(
+export async function query<T extends QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {
@@ -114,7 +114,7 @@ export async function closePool(): Promise<void> {
 /**
  * Find one record
  */
-export async function findOne<T>(
+export async function findOne<T extends Record<string, any>>(
   table: string,
   conditions: Record<string, any>
 ): Promise<T | null> {
@@ -133,7 +133,7 @@ export async function findOne<T>(
 /**
  * Find many records
  */
-export async function findMany<T>(
+export async function findMany<T extends Record<string, any>>(
   table: string,
   conditions?: Record<string, any>,
   options?: {
@@ -172,7 +172,7 @@ export async function findMany<T>(
 /**
  * Insert a record
  */
-export async function insert<T>(
+export async function insert<T extends Record<string, any>>(
   table: string,
   data: Record<string, any>
 ): Promise<T> {
@@ -191,7 +191,7 @@ export async function insert<T>(
 /**
  * Update a record
  */
-export async function update<T>(
+export async function update<T extends Record<string, any>>(
   table: string,
   conditions: Record<string, any>,
   data: Record<string, any>
