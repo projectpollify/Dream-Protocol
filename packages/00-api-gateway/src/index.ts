@@ -22,6 +22,7 @@ import {
 } from './health';
 
 // Import all module routers
+import { createAuthRouter } from '@dream/auth';
 import { createIdentityRouter } from '@dream/identity';
 import { createBridgeRouter } from '@dream/bridge-legacy';
 import { createUserRouter } from '@dream/user';
@@ -30,7 +31,7 @@ import { createExchangeRouter } from '@dream/token-exchange';
 import { createGovernanceRouter } from '@dream/governance';
 import { createContentRouter } from '@dream/content';
 import { createSocialRouter } from '@dream/social';
-import { createVerificationRouter } from '@dream/verification';
+import { createVerificationRouter} from '@dream/verification';
 import { createAnalyticsRouter } from '@dream/analytics';
 
 // Load environment variables
@@ -93,6 +94,7 @@ app.get('/info', (req: Request, res: Response) => {
  */
 
 // Mount all module routers
+app.use('/api/v1/auth', createAuthRouter());
 app.use('/api/v1/identity', createIdentityRouter());
 app.use('/api/v1/bridge', createBridgeRouter());
 app.use('/api/v1/users', createUserRouter());
@@ -143,7 +145,7 @@ app.listen(PORT, HOST, () => {
   logger.info(`   📍 Listening on: http://localhost:${PORT}`);
   logger.info(`   🌍 CORS Origins: ${config.corsOrigin.join(', ')}`);
   logger.info(`   🔧 Environment: ${config.nodeEnv}`);
-  logger.info(`   📦 Modules: 10 routers mounted (NO separate servers)`);
+  logger.info(`   📦 Modules: 11 routers mounted (NO separate servers)`);
   logger.info('');
   logger.info('   Gateway Endpoints:');
   logger.info('     GET  /ping          - Health check');
@@ -151,6 +153,7 @@ app.listen(PORT, HOST, () => {
   logger.info('     GET  /info          - Gateway information');
   logger.info('');
   logger.info('   Module Routes (all in-process):');
+  logger.info('     /api/v1/auth           - Authentication (Register/Login)');
   logger.info('     /api/v1/identity       - Identity & Dual Wallets');
   logger.info('     /api/v1/bridge         - Legacy MVP Bridge');
   logger.info('     /api/v1/users          - User Profiles & Settings');

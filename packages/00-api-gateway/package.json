@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@dream/auth": "workspace:*",
     "@dream/identity": "workspace:*",
     "@dream/bridge-legacy": "workspace:*",
     "@dream/user": "workspace:*",
