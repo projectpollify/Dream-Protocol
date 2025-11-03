@@ -31,7 +31,7 @@ const pool = new Pool({
 /**
  * Execute a single query
  */
-export async function query<T = any>(
+export async function query<T extends Record<string, any> = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {

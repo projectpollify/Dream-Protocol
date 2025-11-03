@@ -13,7 +13,7 @@ import lightScoreService from '../services/light-score.service';
 import transactionService from '../services/transaction.service';
 import { parseTokenAmount } from '../types/economy.types';
 
-const router = Router();
+const router: Router = Router();
 
 // ============================================================================
 // Validation Schemas
