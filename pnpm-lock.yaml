@@ -38,6 +38,9 @@ importers:
 
   apps/flagship:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       next:
         specifier: 16.0.1
         version: 16.0.1(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -75,6 +78,9 @@ importers:
 
   packages/00-api-gateway:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -124,6 +130,9 @@ importers:
       argon2:
         specifier: ^0.31.2
         version: 0.31.2
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -152,6 +161,9 @@ importers:
 
   packages/02-bridge-legacy:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -193,8 +205,8 @@ importers:
         specifier: ^2.1540.0
         version: 2.1692.0
       bcrypt:
-        specifier: ^5.1.1
-        version: 5.1.1
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -253,6 +265,9 @@ importers:
 
   packages/04-economy:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -293,6 +308,9 @@ importers:
 
   packages/05-token-exchange:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -333,6 +351,9 @@ importers:
 
   packages/06-governance:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       crypto:
         specifier: ^1.0.1
         version: 1.0.1
@@ -379,6 +400,9 @@ importers:
 
   packages/07-content:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -422,6 +446,9 @@ importers:
 
   packages/08-social:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -465,6 +492,9 @@ importers:
 
   packages/09-verification:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -514,6 +544,9 @@ importers:
 
   packages/10-analytics:
     dependencies:
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       dotenv:
         specifier: ^16.4.1
         version: 16.6.1
@@ -2530,9 +2563,9 @@ packages:
     resolution: {integrity: sha512-OO7gIn3m7ea4FVx4cT8gdlWQR2+++EquhdpWQJH9BQjK63tJJ6ngB3QMZDO6DiBoXiIGUsTPHjlrHVxPGcGxLQ==}
     engines: {node: '>=8.0.0'}
 
-  bcrypt@5.1.1:
-    resolution: {integrity: sha512-AGBHOG5hPYZ5Xl9KXzU5iKq9516yEmvCKDg3ecP5kX2aB6UqTeXZxk2ELnDgDm6BQSMlLt9rDB4LoSMx0rYwww==}
-    engines: {node: '>= 10.0.0'}
+  bcrypt@6.0.0:
+    resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
+    engines: {node: '>= 18'}
 
   bech32@1.1.4:
     resolution: {integrity: sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==}
@@ -4268,9 +4301,6 @@ packages:
 
   node-addon-api@3.2.1:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
-
-  node-addon-api@5.1.0:
-    resolution: {integrity: sha512-eh0GgfEkpnoWDq+VY8OyvYhFEzBk6jIYbRKdIlyTiAXIVJ8PyBaKb0rp7oDtoddbdoHWhq8wwr+XZ81F1rpNdA==}
 
   node-addon-api@7.1.1:
     resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
@@ -7662,13 +7692,10 @@ snapshots:
       cashaddrjs: 0.4.4
       stream-browserify: 3.0.0
 
-  bcrypt@5.1.1:
+  bcrypt@6.0.0:
     dependencies:
-      '@mapbox/node-pre-gyp': 1.0.11
-      node-addon-api: 5.1.0
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
+      node-addon-api: 8.5.0
+      node-gyp-build: 4.8.4
 
   bech32@1.1.4: {}
 
@@ -9702,8 +9729,6 @@ snapshots:
       semver: 7.7.3
 
   node-addon-api@3.2.1: {}
-
-  node-addon-api@5.1.0: {}
 
   node-addon-api@7.1.1: {}
 

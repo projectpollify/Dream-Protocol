@@ -12,11 +12,11 @@ let pool: Pool | null = null;
 export function getPool(): Pool {
   if (!pool) {
     pool = new Pool({
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
+      user: process.env.DB_USER || 'dream_admin',
+      password: process.env.DB_PASSWORD,
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME || 'dream_protocol',
+      database: process.env.DB_NAME || 'dreamprotocol_dev',
     });
   }
   return pool;

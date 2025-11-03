@@ -16,8 +16,8 @@ dotenv.config();
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'dream_protocol',
-  user: process.env.DB_USER || 'postgres',
+  database: process.env.DB_NAME || 'dreamprotocol_dev',
+  user: process.env.DB_USER || 'dream_admin',
   password: process.env.DB_PASSWORD,
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
