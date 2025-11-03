@@ -1,6 +1,10 @@
 import Link from "next/link";
 
 export default function Home() {
+  // Get API URL from environment variable
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrlDisplay = apiUrl.replace('http://', '').replace('https://', '');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto px-4 py-16">
@@ -25,7 +29,7 @@ export default function Home() {
                 System Status
               </h2>
               <p className="text-gray-600 dark:text-gray-300">
-                Backend API running on <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">localhost:3005</code>
+                Backend API running on <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{apiUrlDisplay}</code>
               </p>
             </div>
             <div className="flex items-center gap-2">
